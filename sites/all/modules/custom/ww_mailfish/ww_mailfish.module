@@ -70,7 +70,7 @@ function ww_mailfish_form_alter(&$form, &$form_state, $form_id){
      
   $form['pass'] = array(
 
-  '#type' => 'date', 
+  '#type' => '', 
 
   '#title' => t('Password'), 
 

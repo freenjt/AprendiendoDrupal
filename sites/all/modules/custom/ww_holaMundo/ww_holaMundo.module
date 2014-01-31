@@ -10,6 +10,14 @@ function ww_holaMundo_menu(){
   );
   return $items;
 }
+function ww_holaMundo_permission() {
+  return array(
+    'administer my module' => array(
+      'title' => t('Administer my module'),
+      'description' => t('Perform administration tasks for my module.'),
+    ),
+  );
+}
 
 function ww_holaMundo_saludo(){
   return "<b> Hola mundo </b>";
