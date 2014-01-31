@@ -1,0 +1,16 @@
+<?php
+
+function ww_holaMundo_menu(){
+  $items["saludando/hola"]=array(
+    "title" => "Saludo",
+    "description" => "Es un mensaje de prueba",
+    "page callback" => "ww_holaMundo_saludo",
+    "type" => MENU_SUGGESTED_ITEM,
+    "access callback" => TRUE,
+  );
+  return $items;
+}
+
+function ww_holaMundo_saludo(){
+  return "<b> Hola mundo </b>";
+}

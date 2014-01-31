@@ -1,0 +1,88 @@
+<?php
+function ww_mailfish_menu() {
+  $items = array();
+  $items['admin/config/content/ww_mailfish'] = array(
+    'title' => 'Ww_mailfish Settings',
+    'description' => 'Administer Ww_mailfish Settings.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ww_mailfish_admin_settings_form'),
+    'access arguments' => array('manage ww_mailfish settings'),
+    'file' => 'ww_mailfish.admin.inc',
+  );
+  $items['admin/reports/ww_mailfish'] = array(
+    'title' => 'Ww_mailfish Signups',
+    'description' => 'View Ww_mailfish Signups',
+    'page callback' => 'ww_mailfish_signups',
+    'access arguments' => array('view ww_mailfish subscriptions'),
+    'file' => 'ww_mailfish.admin.inc',
+  );
+  return $items;
+}
+
+function ww_mailfish_permission() {
+  $perm = array(
+  'view ww_mailfish subscriptions' => array(
+  'title' => t('View Ww_mailfish subscriptions'),
+    ),
+  'create ww_mailfish subscription' => array(
+  'title' => t('Create Ww_mailfish subscriptions'),
+    ),
+  'manage ww_mailfish settings' => array(
+  'title' => t('Manage Ww_mailfish settings'),
+    )
+  );
+  return $perm;
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function ww_mailfish_form_node_form_alter(&$form, $form_state) {
+  dpm($form);
+  
+  $node = $form['#node'];
+// Perform our check to see if we should be performing an action as the very first action.
+  $types = variable_get('ww_mailfish_types', array());
+// Check if this node type is enabled for ww_mailfish
+// and that the user has access to the per-node settings.
+  if (isset($types[$node->type]) && user_access('manage ww_mailfish settings')) {
+// Add a new fieldset with a checkbox for per-node ww_mailfish setting.
+    $form['ww_mailfish'] = array(
+      '#title' => t('Ww_mailfish'),
+      '#type' => 'fieldset',
+      '#collapsible' => TRUE,
+      '#collapsed' => FALSE,
+      '#group' => 'additional_settings',
+    );
+    $form['ww_mailfish']['ww_mailfish_enabled'] = array(
+      '#title' => t('Collect e-mail addresses for this node.'),
+      '#type' => 'checkbox',
+      '#default_value' => isset($node->ww_mailfish_enabled) ? $node->ww_mailfish_enabled : FALSE,
+    );
+  }
+}
+/**
+ * Implements hook_form_alter().
+ */
+function ww_mailfish_form_alter(&$form, &$form_state, $form_id){
+  //dpm($form, 'mio');
+  if ($form_id == "search_block_form"){
+     
+  $form['pass'] = array(
+
+  '#type' => 'date', 
+
+  '#title' => t('Password'), 
+
+  '#maxlength' => 64, 
+
+  '#size' => 15,
+
+); 
+  }
+}
+
+function ww_mailfish_signups() {
+  return 'Reports should be here.';
+}
+

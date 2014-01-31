@@ -1,0 +1,4 @@
+name=Hola mundo
+description=Mensaje Hola mundo
+package=Formulario ejemplo
+core=7.x

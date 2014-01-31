@@ -2,6 +2,8 @@
 //echo "El boton rojo";
 
 function ww_botonRojo_node_view($node, $view_mode) {
+  dpm($node, 'node');
+  dpm($view_mode, 'view');
 if ($node->type == 'article') {
   $link_text = t('Eliminar este nodo');
   $link_options = array(
