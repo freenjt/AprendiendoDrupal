@@ -6,10 +6,12 @@ function ww_holaMundo_menu(){
     "description" => "Es un mensaje de prueba",
     "page callback" => "ww_holaMundo_saludo",
     "type" => MENU_SUGGESTED_ITEM,
-    "access callback" => TRUE,
+    'access callback' => 'ww_holaMundo_access',
+    "access arguments" => array('administer my module'),
   );
   return $items;
 }
+
 function ww_holaMundo_permission() {
   return array(
     'administer my module' => array(
@@ -17,6 +19,11 @@ function ww_holaMundo_permission() {
       'description' => t('Perform administration tasks for my module.'),
     ),
   );
+}
+
+function ww_holaMundo_access() {
+  
+  return TRUE;
 }
 
 function ww_holaMundo_saludo(){
