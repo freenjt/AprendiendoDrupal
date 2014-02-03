@@ -1,5 +1,7 @@
 <?php
-
+/**
+ * Formulario form
+ */
 function operation_factorial_form($form, &$form_state){
 $form['factorial'] = array(
   '#type' => 'fieldset', 

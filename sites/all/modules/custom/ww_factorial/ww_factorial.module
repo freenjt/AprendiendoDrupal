@@ -13,8 +13,21 @@
     'description' => t('This is a test.'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('operation_factorial_form'),
-    'access callback' => TRUE,
+    'access arguments' => array('administer my module'),
+    //'access callback' => 'user_acces',
     'file' => 'ww_factorial_operacion.inc',
     );
  return $items;
+ }
+ 
+ /*
+  * Implements hook_permission().
+  */
+ function ww_factorial_permission(){
+   return array(
+    'administer my module' => array(
+      'title' => t('Administer my module'),
+      'description' => t('Perform administration tasks for my module.'),
+    ),
+  );
  }
