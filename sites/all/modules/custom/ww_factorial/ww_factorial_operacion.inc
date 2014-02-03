@@ -30,6 +30,22 @@ $form['submit'] = array(
 return $form;
 }
 
+function factorial_configuracion(){
+    $form['titulo_factorial'] = array(
+    '#title' => t('Title of the form'),  
+    '#type' => 'textfield',
+    '#default_value' => variable_get('titulo_factorial', 'Calculando factorial'),  
+    '#required' => TRUE,  
+  );
+  /*
+  $form['submit'] = array(
+      '#type' => 'submit',
+      '#value' => 'Guardar configuración',
+  );
+  $form['#submit'][] = 'saludar_configuracion_submit';  */
+  return system_settings_form($form);
+}
+
 function operation_factorial_submit($form,&$form_state){
   $resultado=1;
  // dpm($form_state,'form_state');

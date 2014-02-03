@@ -1,33 +1,95 @@
 <?php
+
 /**
- *Ejemplo de calculo de factorial.
+ * Ejemplo de calculo de factorial.
  */
 
- /**
-  *Implements hook_menu().
-  */
- 
- function ww_factorial_menu(){
- $items['calculo/factorial']=array(
+/**
+ * Implements hook_menu().
+ */
+function ww_factorial_menu() {
+  $items['calculo/factorial'] = array(
     'title' => "Calculando factorial",
     'description' => t('This is a test.'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('operation_factorial_form'),
     'access arguments' => array('administer my module'),
-    //'access callback' => 'user_acces',
+    'access callback' => TRUE,
     'file' => 'ww_factorial_operacion.inc',
     );
- return $items;
- }
- 
- /*
-  * Implements hook_permission().
-  */
- function ww_factorial_permission(){
-   return array(
+  $items['admin/config/content/calculo'] = array(
+    'title' => 'Factorial',
+    'description' => t('Configure the options for the factorial'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('factorial_configuracion'),
+    'access arguments' => array('configure my module'),
+    'file' => 'ww_factorial_operacion.inc',
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+
+function ww_factorial_permission() {
+  return array(
     'administer my module' => array(
       'title' => t('Administer my module'),
       'description' => t('Perform administration tasks for my module.'),
-    ),
+      ),
+     'configure my module' => array(
+       'title' => t('Configure my module'),
+       'description' => t('Site for configure the module of factorial'),
+     ),
   );
- }
+}
+
+function ww_factorial_menu_entrar(){
+  $num=rand(0, 1);
+  //dpm($num,'num');
+  // Ejemplo.
+  if ($num > 0.5) {
+    return TRUE;
+  }
+  else {
+    return FALSE;
+  }
+}
+
+/*
+ * Implements hook_block_info().
+ */
+
+function ww_factorial_block_info() {
+    $blocks = array();
+
+    $blocks['info'] = array(
+        'info' => t('Factorial')
+    );
+
+    return $blocks;
+}
+
+/**
+ * Implements hook_block_view
+ */
+function ww_factorial_block_view($delta = '') {
+    $block = array();
+    $block['subject'] = t('Block of factorial');
+    $block['content'] = t('This is a example');
+    return $block;
+}
+
+/**
+ * Implements hook_menu_alter().
+ */
+function ww_factorial_menu_alter(&$items) {
+  $variables = array(
+    'message' => variable_get('titulo_factorial', 'Calculando factorial'),
+  );
+  if(!empty ($variables)){
+  $items['calculo/factorial']['title']=$variables;
+  }
+  //dpm($variables, 'VARIABLES');
+}
