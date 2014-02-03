@@ -1,0 +1,4 @@
+name=Factorial
+description=Calculo del factorial
+package=Calculando el factorial
+core=7.x
