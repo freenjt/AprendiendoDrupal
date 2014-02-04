@@ -1,0 +1,55 @@
+<?php
+
+/**
+ * Implements hook_schema().
+ */
+
+function ww_factorial_schema(){
+  $schema['factorial'] = array(
+    'description' => 'This is table factorial',
+  'fields' => array(
+    'id' => array(
+      'description' => 'This is the main identificator of the nodo',
+      'type' => 'int',
+      'unsigned' => TRUE,
+      'not null' => TRUE,
+    ),
+    'title' => array(
+      'description' => 'This is the name of the title of factorial',
+      'type' => 'varchar',
+      'length' => 50,
+      'not null' => TRUE,
+    ),
+    'description_factorial' => array(
+      'description' => 'This is the description of the form factorial',
+      'type' => 'varchar',
+      'length' => 50,
+      'not null' => FALSE,  
+    ),
+  ),
+  'primary_key' => array('id'),
+  );
+  return $schema;   
+}
+
+/**
+* Implements hook_uninstall().
+*/
+function ww_factorial_uninstall(){
+  variable_del('titulo_factorial');
+}
+
+/**
+ * Agregar tabla factorial.
+ */
+function ww_factorial_update_7000(&$sandbox){
+  db_create_table('factorial',drupal_get_schema('factorial',TRUE));
+}
+
+/**
+ * Agregar nuevo campo descripcion_factorial.
+ */
+function ww_factorial_update_7100(&$sandbox){
+  $schema=drupal_get_schema('factorial');
+  db_add_field('factorial','description_factorial',$schema['fields']['description_factorial']);
+}

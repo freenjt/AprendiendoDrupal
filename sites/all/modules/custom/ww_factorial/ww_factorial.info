@@ -2,3 +2,5 @@ name=Factorial
 description=Calculo del factorial
 package=Calculando el factorial
 core=7.x
+configure = admin/config/content/calculo
+
