@@ -45,7 +45,14 @@ function people_form_validate($form, &$form_state) {
     if(!filter_var($form_state['values']['email'], FILTER_VALIDATE_EMAIL)){
       form_set_error('email', t('Error in format of email.'));
     }
-    $resultado=db_query('select p.email_people from {persona} p');
+    //opcion 1:No recomendada
+    //$resultado=db_query('select p.email_people from {persona} p');
+    //opcion 2:Recomendada
+    $resultado=db_select('persona','p')
+      ->fields('p',array('email_people'))
+      ->execute();
+    dpm($resultado,'resultado');
+    //$resultado;
     foreach ($resultado as $record) {
       if($record->email_people == $form_state['values']['email']){
         form_set_error('email', t('Error email repetido'));
