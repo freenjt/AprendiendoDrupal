@@ -1,0 +1,4 @@
+name=Datos de persona
+description=Modulo para describir a una persona.
+core=7.x
+package=Modulos de prueba

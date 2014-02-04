@@ -1,0 +1,29 @@
+<?php
+/**
+ * Implements hook_menu().
+ */
+function ww_persona_menu(){
+  $items['datos/persona']=array(
+    'title' => t('Example people'),
+    'description' => t('This is example on data of people'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('people_form'),
+    'access callback' => TRUE,
+    'access arguments' => array('manage administer'),
+    'file' => 'ww_persona_forms.inc',
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function ww_persona_permission() {
+  return array(
+    'manage administer' => array(
+      'title' => t('Administer my module'),
+      'description' => t('Perform administration tasks for my module.'),
+      ),
+  );
+}
+

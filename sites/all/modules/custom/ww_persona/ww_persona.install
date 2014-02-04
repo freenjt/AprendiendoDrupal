@@ -1,0 +1,76 @@
+<?php
+
+/**
+ * Implements hook_schema().
+ */
+function ww_persona_schema(){
+  $schema['persona'] = array(
+    'description' => 'This is table people',
+    'fields' => array(
+      'id_people' => array(
+        'description' => 'This is the main identificator of the nodo.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'name_people' => array(
+        'description' => 'This is the name of the people.',
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => TRUE,
+      ),
+      'email_people' => array(
+        'description' => 'This is the email of the people.',
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => FALSE,  
+        //'unique' => TRUE,  
+      ),
+    ),
+    'primary_key' => array('id_people'),
+    'unique keys' => array(
+      'emailp' => array('email_people'),
+    ),
+  );
+  return $schema;   
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function ww_persona_uninstall(){
+  variable_del('');
+}
+
+/**
+ * Funcion para crear tabla persona.
+ */
+function ww_persona_update_7000(){
+  db_create_table('persona',drupal_get_schema('persona',TRUE));
+}
+
+/**
+ * Funcion para cambiar el tipo de datos del atributo id por serial.
+ */
+function ww_persona_update_7100(){
+  db_drop_primary_key('persona');
+  db_change_field('persona', 'id_people', 'id_people',
+  array('type' => 'serial', 'not null' => TRUE),
+  array('primary key' => array('id_people')));
+}
+
+/**
+ * Funcion para añadir unique al email.
+ */
+function ww_persona_update_7200(){
+  //db_drop_primary_key('persona');
+  db_change_field('persona', 'email_people', 'email_people',
+    array('type' => 'varchar', 'not null' => FALSE, 'length' => 50),
+    //array('primary key' => array('id_people')),
+    array('unique keys' => array(
+      //'nid_vid' => array('nid', 'vid'),
+      'email' => array('email_people'),
+    )
+    )
+   );
+}
