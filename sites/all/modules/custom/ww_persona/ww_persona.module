@@ -12,8 +12,29 @@ function ww_persona_menu(){
     'access arguments' => array('manage administer'),
     'file' => 'ww_persona_forms.inc',
   );
+  $items['listar/persona']=array(
+    'title' => t('List of peoples'),
+    'description' => t('This is a table with the people and their emails.'),
+    'page callback' => 'people_list',
+    //'page arguments' => array('people_list'),
+    'access callback' => TRUE,
+    //'access arguments' => array('view people'),
+    //'file' => 'ww_persona_forms.inc',
+  );
+//    $items['saludar/hola-mundo'] = array(
+//    'title' => 'Saludar',
+//    'page callback' => 'saludar_hola_mundo',
+//    'type' => MENU_CALLBACK,
+//    'access callback' => TRUE,
+//  );
   return $items;
 }
+
+function saludar_hola_mundo() {
+
+ return "<p class='saludo'>Hola Funciona</p>";
+}
+
 
 /**
  * Implements hook_permission().
@@ -24,6 +45,144 @@ function ww_persona_permission() {
       'title' => t('Administer my module'),
       'description' => t('Perform administration tasks for my module.'),
       ),
+      'view people' => array(
+      'title' => t('View list of people.'),
+      'description' => t('Options for view list of people.'),
+      ),
   );
 }
 
+/**
+ * Implements Lista de personas
+ */
+function people_list(){  
+  // create $header, where an array indicating row is  
+  // cells have the following content
+  $limit_peoples = variable_get('limit_list_people');
+  $header_table_edit = array(  
+  // first cell has the following text 'Id people'  
+    t('Id people'),  
+    // second cell has the following text 'Name people'
+    t('Name people'),
+    t('Email people'),
+  ); 
+  // make query to database where we choose numbers of nodes and the name from the table persona
+  $query = db_select('persona', 'p')
+    ->extend('PagerDefault') 
+    ->fields('p')
+    ->limit($limit_peoples)
+    ->execute() 
+    ->fetchAll();  
+  //output all our data from construction foreach  
+  //dpm($query,'query');
+  foreach ($query as $record_table_edit) { 
+  //output a row that comtains 
+    $rows_table_edit[] = array(  
+      // in first cell there is an entry  
+      array(   
+        'data' => t($record_table_edit -> id_people) 
+      ),  
+      array(  
+        'data' => t($record_table_edit->name_people) 
+      ),
+      array(  
+        'data' => t($record_table_edit->email_people) 
+      )
+    );  
+  } 
+  // create $caption with row value 'Table of peoples'
+  $caption_table_edit = t('Table of peoples'); 
+  // create function theme, that has value 'table' and outputs
+  $salida = theme('table',   
+    array( 
+      // table header is situated in $header_edit_table
+      'header' => $header_table_edit,   
+      // table body is in $rows_edit_table 
+      'rows'     => $rows_table_edit,   
+      // table caption will be in $caption_edit_table
+      'caption' => $caption_table_edit
+    ) 
+  ); 
+  $salida .= theme('pager');
+  return $salida;
+}
+
+/**
+ * Implements hook_block_info
+ */
+function ww_persona_block_info(){
+  
+ $blocks['lista_personas'] = array(
+ 'info' => t('Lista personas'),
+ );
+$blocks['hola_mundos'] = array(
+    'info' => 'Bloque para Hola Mundo',
+  );
+ return $blocks;
+
+//  return $blocks;
+}
+
+/**
+ * Implements hook_block_configure($delta='').
+ 
+function ww_persona_block_configure($delta){
+ $form = array();
+ 
+ switch ($delta) {
+ case 'lista_personas':
+ $form['limit_list_people'] = array(
+ '#type' => 'textfield',
+ '#title' => t('Configure limit of list of people to Display'),
+// '#size' => 10,
+ '#description' => t('Enter the limit for display in the table of peoples.'),
+ '#default_value' => variable_get('limit_list_people', 3),
+ );
+ break;
+ 
+ }
+ 
+ return $form;
+}*/
+
+/**
+ * Implements hook_block_save().
+ 
+function ww_persona_block_save($delta = '', $edit = array()){
+ switch ($delta) {
+ case 'lista_personas':
+ variable_set('limit_list_people', (int)$edit['limit_list_people']);
+ break;
+ }
+}*/
+/**
+ * Implements hook_block_view().
+ */
+function ww_persona_block_view($delta=''){
+ dpm($delta,'delta');
+ switch($delta){
+ case 'hola_mundo':
+ $block['subject'] = t('Lista personas');
+ $block['content'] = people_list();
+
+ return $block;
+ break;
+ }
+//    switch ($delta) {
+//    case 'hola_mundo':
+//      $block['content'] = saludar_hola_mundo();
+//      return $block;   
+//  }
+ //return $block;
+}
+
+function ww_persona_block_contents($delta){
+  switch ($delta) {
+    case 'lista_personas':
+     // return theme('')'<b>Lista de personas</b>';
+      break;
+    
+    default:
+      break;
+  }
+}

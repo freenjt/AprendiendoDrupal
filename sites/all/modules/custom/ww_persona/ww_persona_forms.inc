@@ -50,13 +50,14 @@ function people_form_validate($form, &$form_state) {
     //opcion 2:Recomendada
     $resultado=db_select('persona','p')
       ->fields('p',array('email_people'))
+      ->condition('email_people',$form_state['values']['email'],'=')
       ->execute();
     dpm($resultado,'resultado');
     //$resultado;
     foreach ($resultado as $record) {
-      if($record->email_people == $form_state['values']['email']){
+      //if($record->email_people == $form_state['values']['email']){
         form_set_error('email', t('Error email repetido'));
-      }
+      //}
     }
   }
 }
@@ -78,5 +79,5 @@ function people_form_submit($form, &$form_state){
     array('@error' => $exc->getTraceAsString())),'error');
     //echo $exc->getTraceAsString();
   }
-
 }
+
