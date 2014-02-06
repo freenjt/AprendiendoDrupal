@@ -21,12 +21,24 @@ function ww_persona_menu(){
     //'access arguments' => array('view people'),
     //'file' => 'ww_persona_forms.inc',
   );
-//    $items['saludar/hola-mundo'] = array(
-//    'title' => 'Saludar',
-//    'page callback' => 'saludar_hola_mundo',
-//    'type' => MENU_CALLBACK,
-//    'access callback' => TRUE,
-//  );
+    $items['persona/edit/%']=array(
+    'title' => t('Edit people'),
+    'description' => t('This is a form for edit people'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('people_edit', 2),
+    'access callback' => TRUE,
+    //'access arguments' => array('view people'),
+    'file' => 'ww_persona_forms.inc',
+  );
+    $items['persona/delete/%']=array(
+    'title' => t('Delete people'),
+    'description' => t('This is a form for drop people'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('people_delete', 2),
+    'access callback' => TRUE,
+    //'access arguments' => array('view people'),
+    'file' => 'ww_persona_forms.inc',
+  );
   return $items;
 }
 
@@ -65,6 +77,8 @@ function people_list(){
     // second cell has the following text 'Name people'
     t('Name people'),
     t('Email people'),
+    t('Link Edit'),
+    t('Link Delete'),
   ); 
   // make query to database where we choose numbers of nodes and the name from the table persona
   $query = db_select('persona', 'p')
@@ -87,7 +101,13 @@ function people_list(){
       ),
       array(  
         'data' => t($record_table_edit->email_people) 
-      )
+      ),
+      array(  
+        'data' => l(t('Edit'),'persona/edit/'.$record_table_edit->id_people) 
+      ),
+      array(  
+        'data' => l(t('Delete'),'persona/delete/'.$record_table_edit->id_people) 
+      ),
     );  
   } 
   // create $caption with row value 'Table of peoples'
@@ -125,7 +145,7 @@ $blocks['hola_mundos'] = array(
 
 /**
  * Implements hook_block_configure($delta='').
- 
+ */
 function ww_persona_block_configure($delta){
  $form = array();
  
@@ -143,23 +163,23 @@ function ww_persona_block_configure($delta){
  }
  
  return $form;
-}*/
+}
 
 /**
  * Implements hook_block_save().
- 
+ */
 function ww_persona_block_save($delta = '', $edit = array()){
  switch ($delta) {
  case 'lista_personas':
  variable_set('limit_list_people', (int)$edit['limit_list_people']);
  break;
  }
-}*/
+}
 /**
  * Implements hook_block_view().
  */
 function ww_persona_block_view($delta=''){
- dpm($delta,'delta');
+ //dpm($delta,'delta');
  switch($delta){
  case 'hola_mundo':
  $block['subject'] = t('Lista personas');
