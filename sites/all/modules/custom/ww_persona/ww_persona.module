@@ -8,17 +8,17 @@ function ww_persona_menu(){
     'description' => t('This is example on data of people'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('people_form'),
-    'access callback' => TRUE,
+    'access callback' => 'user_access',
     'access arguments' => array('manage administer'),
     'file' => 'ww_persona_forms.inc',
   );
   $items['listar/persona']=array(
     'title' => t('List of peoples'),
     'description' => t('This is a table with the people and their emails.'),
-    'page callback' => 'people_list',
-    //'page arguments' => array('people_list'),
-    'access callback' => TRUE,
-    //'access arguments' => array('view people'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('people_list'),
+    'access callback' => 'user_access',
+    'access arguments' => array('view people'),
     //'file' => 'ww_persona_forms.inc',
   );
     $items['persona/edit/%']=array(
@@ -26,8 +26,8 @@ function ww_persona_menu(){
     'description' => t('This is a form for edit people'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('people_edit', 2),
-    'access callback' => TRUE,
-    //'access arguments' => array('view people'),
+    'access callback' => 'restringir_accesso',
+    'access arguments' => array('edit people',2),
     'file' => 'ww_persona_forms.inc',
   );
     $items['persona/delete/%']=array(
@@ -35,18 +35,89 @@ function ww_persona_menu(){
     'description' => t('This is a form for drop people'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('people_delete', 2),
-    'access callback' => TRUE,
-    //'access arguments' => array('view people'),
+    'access callback' => 'restringir_accesso',
+    'access arguments' => array('delete people',2),
     'file' => 'ww_persona_forms.inc',
   );
   return $items;
 }
 
-function saludar_hola_mundo() {
-
- return "<p class='saludo'>Hola Funciona</p>";
+/**
+ * Funcion del access callback
+ */
+function restringir_accesso($permiso, $valor){
+   //user_access($permiso);
+  $query = db_select('persona', 'p') 
+    ->fields('p')
+    ->condition('$id_people',$valor)
+    ->execute() 
+    ->fetchAll();
+  if(count($query) <= 0){
+    return FALSE;
+  }
+  else{
+   return user_access($permiso);  
+  }
+  // dpm($query,'query');
 }
 
+function saludar_hola_mundo() {
+  
+  return "<p class='saludo'>Hola Funciona</p>";
+}
+
+/**
+ * Implements hook_node_load().
+ */
+//function ww_persona_node_load(){
+//  foreach ($nodes as $nid => $node) {
+//    // Add ww_persona data to the node object when it is loaded.
+//    $node->ww_persona_enabled = ww_persona_get_node_enabled($node->nid);
+//  }
+//}
+//
+///**
+//* Implements hook_node_insert().
+//*/
+//function ww_persona_node_insert($node) {
+//  if ($node->ww_persona_enabled) {
+//    // If MailFish is enabled, store the record.
+//    ww_persona_set_node_enabled($node->nid);
+//  }
+//}
+//
+///**
+//* Implements hook_node_update().
+//*/
+//function ww_persona_node_update($node) {
+//  // Delete the old record, if one exists.
+//  ww_persona_delete_node_enabled($node->nid);
+//  if ($node->ww_persona_enabled) {
+//    // If MailFish is enabled, store the record.
+//    ww_persona_set_node_enabled($node->nid);
+//  }
+//}
+//
+///**
+//* Implements hook_node_view().
+//*/
+//function ww_persona_node_view($node, $view_mode, $langcode) {
+//// If appropriate, add the mailfish email form to the node's display.
+//  if ($node->ww_persona_enabled && user_access('create ww_persona subscription')) {
+//    $node->content['persona'] = array(
+//      '#markup' => drupal_render(
+//        drupal_get_form('mailfish_email_form', $node->nid)),'#weight' => 100,
+//    );
+//  }
+//}
+//
+///**
+//* Implements hook_node_delete().
+//*/
+//function ww_persona_node_delete($node) {
+//  // Delete the mailfish_enabled record when the node is deleted.
+//  ww_persona_delete_node_enabled($node->nid); 
+//}
 
 /**
  * Implements hook_permission().
@@ -61,15 +132,24 @@ function ww_persona_permission() {
       'title' => t('View list of people.'),
       'description' => t('Options for view list of people.'),
       ),
+      'edit people' => array(
+      'title' => t('Edit list of people.'),
+      'description' => t('Options for edit list of people.'),
+      ),
+      'delete people' => array(
+      'title' => t('Delete list of people.'),
+      'description' => t('Options for delete list of people.'),
+      ),
   );
 }
 
 /**
  * Implements Lista de personas
  */
-function people_list(){  
+function people_list($form, &$form_state) {  
   // create $header, where an array indicating row is  
   // cells have the following content
+  //$form=array();
   $limit_peoples = variable_get('limit_list_people');
   $header_table_edit = array(  
   // first cell has the following text 'Id people'  
@@ -81,16 +161,36 @@ function people_list(){
     t('Link Delete'),
   ); 
   // make query to database where we choose numbers of nodes and the name from the table persona
+  $verificar_nombre=(isset($form_state['input']['name'])) ? $form_state['input']['name'] : '';
   $query = db_select('persona', 'p')
     ->extend('PagerDefault') 
     ->fields('p')
-    ->limit($limit_peoples)
-    ->execute() 
-    ->fetchAll();  
+    ->limit($limit_peoples);
+  if($verificar_nombre != ''){
+    $query = $query->condition('name_people', '%' . db_like($verificar_nombre) . '%', 'LIKE');
+    dpm($verificar_nombre,'verificar_nombre');
+  }
+  $query = $query->execute() 
+    ->fetchAll();
+  if($verificar_nombre != '' && count($query)<=0){
+    $arreglo=explode(" ", $verificar_nombre, 7);
+    dpm($arreglo,'arreglo');
+     $query = db_select('persona', 'p')
+    ->extend('PagerDefault') 
+    ->fields('p')
+    ->limit($limit_peoples);
+     $or = db_or();
+    for($i=0; $i<count($arreglo); $i++){
+      $or=$or->condition('name_people', '%' . db_like($arreglo[$i]) . '%', 'LIKE')->condition($or);
+      // $query = $query->condition('name_people', '%' . db_like($arreglo[$i]) . '%', 'LIKE')->condition($or);
+    }
+     $query = $query->condition($or)->execute() 
+      ->fetchAll();
+  }
   //output all our data from construction foreach  
   //dpm($query,'query');
   foreach ($query as $record_table_edit) { 
-  //output a row that comtains 
+    //output a row that comtains 
     $rows_table_edit[] = array(  
       // in first cell there is an entry  
       array(   
@@ -110,6 +210,9 @@ function people_list(){
       ),
     );  
   } 
+  if(count($query) <= 0){
+    $rows_table_edit=array();
+  }
   // create $caption with row value 'Table of peoples'
   $caption_table_edit = t('Table of peoples'); 
   // create function theme, that has value 'table' and outputs
@@ -124,7 +227,52 @@ function people_list(){
     ) 
   ); 
   $salida .= theme('pager');
-  return $salida;
+  $build['content'] = array(
+  'dummy1' => my_search_form($form, $form_state),
+  'dummy2' => array('#markup' => $salida,),
+  );
+  return $build;
+}
+
+/**
+ * Implements form
+ */
+function my_search_form($form, &$form_state) {
+
+  $form['criteria'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Search Criteria',
+    '#attributes' => array('class' => array('container-inline')),
+  );
+
+  $form['criteria']['name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Name people'),
+    '#value' => (isset($form_state['input']['name'])) ? $form_state['input']['name'] : "",
+    '#size' => 40,
+    '#maxlength' => 20,
+  );
+
+  $form['criteria']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => 'search',
+    '#submit' => array('my_search_form_submit'),
+  );
+
+  return $form;
+}
+
+/**
+ * Implements form submit
+ */
+function my_search_form_submit($form, &$form_state){
+  //dpm($form,'form_state');
+  if(!empty ($form_state)){
+    //if($form_state['values']['name'])
+
+    $form_state['rebuild'] = TRUE;
+  }
+  
 }
 
 /**
@@ -132,62 +280,61 @@ function people_list(){
  */
 function ww_persona_block_info(){
   
- $blocks['lista_personas'] = array(
- 'info' => t('Lista personas'),
- );
-$blocks['hola_mundos'] = array(
+  $blocks['lista_personas'] = array(
+    'info' => t('Lista personas'),
+  );
+  $blocks['hola_mundos'] = array(
     'info' => 'Bloque para Hola Mundo',
   );
- return $blocks;
+  return $blocks;
 
-//  return $blocks;
 }
 
 /**
  * Implements hook_block_configure($delta='').
  */
 function ww_persona_block_configure($delta){
- $form = array();
+  $form = array();
+  dpm($delta,'delta');
+  switch ($delta) {
+  case 'lista_personas':
+    $form['limit_list_people'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Configure limit of list of people to Display'),
+      // '#size' => 10,
+      '#description' => t('Enter the limit for display in the table of peoples.'),
+      '#default_value' => variable_get('limit_list_people', 3),
+    );
+  break;
  
- switch ($delta) {
- case 'lista_personas':
- $form['limit_list_people'] = array(
- '#type' => 'textfield',
- '#title' => t('Configure limit of list of people to Display'),
-// '#size' => 10,
- '#description' => t('Enter the limit for display in the table of peoples.'),
- '#default_value' => variable_get('limit_list_people', 3),
- );
- break;
+  }
  
- }
- 
- return $form;
+  return $form;
 }
 
 /**
  * Implements hook_block_save().
  */
 function ww_persona_block_save($delta = '', $edit = array()){
- switch ($delta) {
- case 'lista_personas':
- variable_set('limit_list_people', (int)$edit['limit_list_people']);
- break;
+  switch ($delta) {
+  case 'lista_personas':
+    variable_set('limit_list_people', (int)$edit['limit_list_people']);
+  break;
  }
 }
 /**
  * Implements hook_block_view().
  */
 function ww_persona_block_view($delta=''){
- //dpm($delta,'delta');
- switch($delta){
- case 'hola_mundo':
- $block['subject'] = t('Lista personas');
- $block['content'] = people_list();
+  //dpm($delta,'delta');
+  switch($delta){
+  case 'hola_mundo':
+  $block['subject'] = t('Lista personas');
+  $block['content'] = people_list();
 
- return $block;
- break;
- }
+  return $block;
+  break;
+  }
 //    switch ($delta) {
 //    case 'hola_mundo':
 //      $block['content'] = saludar_hola_mundo();
@@ -199,10 +346,10 @@ function ww_persona_block_view($delta=''){
 function ww_persona_block_contents($delta){
   switch ($delta) {
     case 'lista_personas':
-     // return theme('')'<b>Lista de personas</b>';
-      break;
+      // return theme('')'<b>Lista de personas</b>';
+    break;
     
     default:
-      break;
+    break;
   }
 }

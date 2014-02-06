@@ -52,17 +52,30 @@ function valida_formularios(&$form_state, $opcion=0){
     //opcion 1:No recomendada
     //$resultado=db_query('select p.email_people from {persona} p');
     //opcion 2:Recomendada
+    $resultado=db_select('persona','p')
+      ->fields('p',array('email_people'))
+      ->condition('email_people',$form_state['values']['email'],'=')
+      ->execute();
     if($opcion == 1){
-      $resultado=db_select('persona','p')
-        ->fields('p',array('email_people'))
-        ->condition('email_people',$form_state['values']['email'],'=')
-        ->execute();
+
       dpm($resultado,'resultado');
         //$resultado;
       foreach ($resultado as $record) {
       //if($record->email_people == $form_state['values']['email']){
         form_set_error('email', t('Error email repetido'));
       //}
+      }
+    }
+    elseif ($opcion == 0) {
+      $result=db_select('persona','p')
+        ->fields('p')
+        ->condition('id_people',$form_state['values']['oculto'],'=')
+        ->execute()
+        ->fetchAssoc();
+      $compara=$resultado->fetchAssoc();
+      //dpm($compara,'compara');
+      if($compara != '' && $compara['email_people'] != $result['email_people']){
+        form_set_error('email', t('Error email repetido'));
       }
     }
   }
@@ -80,6 +93,7 @@ function people_form_submit($form, &$form_state){
     }
     drupal_set_message(t('The form has been submitted. name="@name , email=@email',
     array('@name' => $form_state['values']['name'], '@email' => $form_state['values']['email'])));
+    $form_state['redirect'] = 'listar/persona';
   } catch (Exception $exc) {
     drupal_set_message(t('The form has not been submitted for @error',
     array('@error' => $exc->getTraceAsString())),'error');
@@ -98,7 +112,7 @@ function people_edit($form, &$form_state, $id){
       ->condition('id_people',$valor,'=')
       ->execute()
       ->fetchAssoc();
-    dpm($resultado,'resultado');
+    //dpm($resultado,'resultado');
     $form['contact'] = array(
     '#type' => 'fieldset', 
     '#title' => t('Form contact'), 
@@ -159,6 +173,7 @@ function people_edit_submit($form, &$form_state){
     }
     drupal_set_message(t('The form has been submitted. name="@name , email=@email',
     array('@name' => $form_state['values']['name'], '@email' => $form_state['values']['email'])));
+    $form_state['redirect']='listar/persona';
   } catch (Exception $exc) {
     drupal_set_message(t('The form has not been submitted for @error',
     array('@error' => $exc->getTraceAsString())),'error');
@@ -198,12 +213,13 @@ function people_delete($form, $form_state, $id){
 /**
  * Implements form_submit
  */
-function people_delete_submit($form, $form_state){
+function people_delete_submit($form, &$form_state){
   try {
     db_delete('persona')
     ->condition('id_people',$form_state['values']['valor_oculto'],'=')
     ->execute();
     drupal_set_message(t('People with id=@id has been deleted.', array('@id' => $form_state['values']['valor_oculto'])));
+    $form_state['redirect'] = 'listar/persona';
   } catch (Exception $exc) {
     drupal_set_message(t('The form has not been submitted for @error',
     array('@error' => $exc->getTraceAsString())),'error');
