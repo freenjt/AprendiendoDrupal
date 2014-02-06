@@ -181,7 +181,7 @@ function people_list($form, &$form_state) {
     ->limit($limit_peoples);
      $or = db_or();
     for($i=0; $i<count($arreglo); $i++){
-      $or=$or->condition('name_people', '%' . db_like($arreglo[$i]) . '%', 'LIKE')->condition($or);
+      $or=$or->condition('name_people', '%' . db_like($arreglo[$i]) . '%', 'LIKE');
       // $query = $query->condition('name_people', '%' . db_like($arreglo[$i]) . '%', 'LIKE')->condition($or);
     }
      $query = $query->condition($or)->execute() 
