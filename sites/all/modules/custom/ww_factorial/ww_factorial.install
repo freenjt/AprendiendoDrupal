@@ -26,6 +26,12 @@ function ww_factorial_schema(){
       'length' => 50,
       'not null' => FALSE,  
     ),
+      'nid_factorial' => array(
+      'description' => 'This is the nid of the form factorial',
+      'type' => 'int',
+      'length' => 30,
+      'not null' => FALSE,  
+    ),
   ),
   'primary_key' => array('id'),
   );
@@ -52,4 +58,12 @@ function ww_factorial_update_7000(&$sandbox){
 function ww_factorial_update_7100(&$sandbox){
   $schema=drupal_get_schema('factorial');
   db_add_field('factorial','description_factorial',$schema['fields']['description_factorial']);
+}
+
+/**
+ * Agregar nuevo campo nid_factorial.
+ */
+function ww_factorial_update_7200(&$sandbox){
+  $schema=drupal_get_schema('factorial');
+  db_add_field('factorial','nid_factorial',$schema['fields']['nid_factorial']);
 }

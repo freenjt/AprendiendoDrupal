@@ -1,0 +1,87 @@
+<?php
+/**
+* @file
+* Defines and manages the ww_mailfish schema.
+*/
+/**
+* Implements hook_schema().
+*/
+function ww_mailfish_schema() {
+$schema['ww_mailfish'] = array(
+  'description' => 'Stores the email address, timestamp, node id anduser id if any',
+		'fields' => array(
+			'id' => array(
+				'description' => 'The primary identifier for the entry.',
+				'type' => 'serial',
+				'unsigned' => TRUE,
+				'not null' => TRUE,
+			),
+		'uid' => array(
+			'description' => 'The {users}.uid that added this ssubscription.',
+			'type' => 'int',
+			'not null' => TRUE,
+			'default' => 0,
+		),
+		'nid' => array(
+			'description' => 'The {node}.nid that this subscription was added on.',
+			'type' => 'int',
+			'not null' => TRUE,
+			'default' => 0,
+		),
+		'mail' => array(
+			'description' => 'User\'s email address.',
+			'type' => 'varchar',
+			'length' => 64,
+			'not null' => FALSE,
+			'default' => '',
+		),
+		'created' => array(
+			'type' => 'int',
+			'not null' => TRUE,
+			'default' => 0,
+			'description' => 'Timestamp for when subscription was created.',
+		),
+	),
+	'primary key' => array('id'),
+		'indexes' => array(
+		'node' => array('nid'),
+		'node_user' => array('nid', 'uid'),
+	),
+);
+
+$schema['ww_mailfish_enabled'] = array(
+	'description' => 'Tracks whether ww_mailfish is enabled for a given node.',
+	'fields' => array(
+		'nid' => array(
+			'description' => 'The {node}.nid that has ww_mailfish enabled.',
+			'type' => 'int',
+			'not null' => TRUE,
+			'default' => 0,
+		),
+	),
+	'primary key' => array('nid'),
+);
+return $schema;
+}
+
+/**
+* Implements hook_uninstall().
+*/
+function ww_mailfish_uninstall() {
+	drupal_uninstall_schema('ww_mailfish');
+	variable_del('ww_mailfish_types');
+}
+
+/**
+ * Funcion para agregar el esquema.
+ */
+function ww_mailfish_update_7000(){
+	db_create_table('ww_mailfish',drupal_get_schema('ww_mailfish',TRUE));
+}
+
+/**
+* Funcion para agreaga la tabla ww_mailfish_enabled.
+*/
+function ww_mailfish_update_7100(){
+	db_create_table('ww_mailfish_enabled',drupal_get_schema('ww_mailfish_enabled',TRUE));
+}

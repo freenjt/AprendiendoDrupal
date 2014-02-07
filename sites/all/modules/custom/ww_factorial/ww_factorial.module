@@ -29,6 +29,123 @@ function ww_factorial_menu() {
 }
 
 /**
+ * Implements hook_node_load().
+ */
+//function ww_factorial_node_load($nodes, $types){
+//  dpm($nodes,'nodes');
+//  foreach ($nodes as $nid => $node) {
+//    // Add ww_factorial data to the node object when it is loaded.
+//    $node->factorial = ww_factorial_get_node_enabled($node->nid_factorial);
+//  }
+//}
+//
+///**
+//* Implements hook_node_insert().
+//*/
+//function ww_factorial_node_insert($node) {
+//  if ($node->factorial) {
+//    // If MailFish is enabled, store the record.
+//    ww_factorial_set_node_enabled($node->nid_factorial);
+//  }
+//}
+//
+///**
+//* Implements hook_node_update().
+//*/
+//function ww_factorial_node_update($node) {
+//  // Delete the old record, if one exists.
+//  ww_factorial_delete_node_enabled($node->nid_factorial);
+//  if ($node->factorial) {
+//    // If MailFish is enabled, store the record.
+//    ww_factorial_set_node_enabled($node->nid_factorial);
+//  }
+//}
+//
+///**
+//* Implements hook_node_view().
+//*/
+//function ww_factorial_node_view($node, $view_mode, $langcode) {
+//// If appropriate, add the mailfish email form to the node's display.
+//  if ($node->factorial && user_access('configure my module')) {
+//    $node->content['factorial'] = array(
+//      '#markup' => drupal_render(
+//        drupal_get_form('mailfish_email_form', $node->nid)),'#weight' => 100,
+//    );
+//  }
+//}
+//
+///**
+//* Implements hook_node_delete().
+//*/
+//function ww_factorial_node_delete($node) {
+//  // Delete the mailfish_enabled record when the node is deleted.
+//  ww_factorial_delete_node_enabled($node->nid); 
+//}
+//
+//function ww_factorial_get_node_enabled($nid) {
+//  if (is_numeric($nid)) {
+//    $result = db_query("SELECT nid_factorial FROM {factorial} WHERE nid= :nid", array('nid' => $nid))->fetchField();
+//    if ($result) {  
+//      return TRUE;
+//    }
+//  }
+//  return FALSE;
+//}
+//
+///**
+//  * Add an entry for a node's ww_factorial setting.
+//  *
+//  * @param int $nid
+//  * The node id of the node in question.
+//  */
+//function ww_factorial_set_node_enabled($nid) {
+//  if (is_numeric($nid)) {
+//    if (!ww_factorial_get_node_enabled($nid)) {
+//      $jump = db_insert('ww_factorial_enabled')
+//      ->fields(array('nid' => $nid))
+//      ->execute();
+//    }
+//  }
+//}
+//
+///**
+// * Remove an entry for a node's ww_factorial setting.
+// * @param int $nid
+// * The node id of the node in question.* 
+// */
+//
+//function ww_factorial_delete_node_enabled($nid) {
+//  if (is_numeric($nid)) {
+//    $vump = db_delete('ww_factorial_enabled')
+//    ->condition('nid', $nid)
+//    ->execute();
+//  }
+//}
+//
+///**
+//* Store a ww_factorial email signup.
+//*/
+//function ww_factorial_signup($email, $nid, $account = NULL) {
+//  if (is_null($account)) {
+//  global $user;
+//  $account = $user;
+//  }
+//  $value = array(
+//    'nid' => $nid,
+//    'uid' => $account->uid,
+//    'mail' => $email,
+//    'created' => time(),
+//  );
+//  drupal_alter('ww_factorial_signup', $value);
+//  module_invoke_all('ww_factorial_signup', $value);
+//  $_SESSION['ww_factorial'] = $nid;
+//  drupal_write_record('ww_factorial', $value);
+//  watchdog('ww_factorial', 'User @uid signed up for node @nid with
+//  @email', array('@uid' => $account->uid, '@nid' => $nid, '@email' =>
+//  $email));
+//}
+
+/**
  * Implements hook_permission().
  */
 
