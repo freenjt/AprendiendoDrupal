@@ -5,3 +5,4 @@ package = MailFish
 version = 0.2-dev
 dependencies[] = block
 configure = admin/config/content/mailfish
+files[] = ww_mailfish.test

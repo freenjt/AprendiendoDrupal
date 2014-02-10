@@ -1,3 +1,9 @@
+<style>
+  .boton { 
+background-color: blue;
+border-color: chartreuse;
+} 
+</style>
 <?php
 /**
  * Implements hook_menu().
@@ -186,7 +192,6 @@ function people_list($form, &$form_state) {
  * Implements form
  */
 function my_search_form($form, &$form_state) {
-
   $form['criteria'] = array(
     '#type' => 'fieldset',
     '#title' => 'Search Criteria',
@@ -200,13 +205,22 @@ function my_search_form($form, &$form_state) {
     '#size' => 40,
     '#maxlength' => 20,
   );
+$path = drupal_get_path('module', 'ww_persona');
+$form['criteria']['#attached'] = array(
+        'css' => array
+	(
+		'type' => 'file',
+		'data' => $path . '/css/style.css',
+	),
+    ); 
 
   $form['criteria']['submit'] = array(
     '#type' => 'submit',
     '#value' => 'search',
+    //'#theme' => 'button',
+    //'#attributes' => array('class' => array('button')),
     '#submit' => array('my_search_form_submit'),
   );
-
   return $form;
 }
 
@@ -291,13 +305,23 @@ function ww_persona_block_view($delta=''){
  //return $block;
 }
 
-function ww_persona_block_contents($delta){
-  switch ($delta) {
-    case 'lista_personas':
-      // return theme('')'<b>Lista de personas</b>';
-    break;
-    
-    default:
-    break;
+/**
+ * Implements hook_theme().
+ */
+//function ww_persona_theme(){
+//  return array(
+//    'people_list' => array(
+//      'template' => 'ww_persona',
+//    ),
+//  );
+//}
+
+/**
+ * Implements hook_form_alter().
+ */
+function ww_persona_form_alter($form, &$form_state, $form_id){
+  dpm($form_id,'form_id');
+  if ($form_id == 'search_block_form') {
+    $form['actions']['submit']['#attributes']['class'][] = 'button';
   }
 }

@@ -85,9 +85,9 @@ function ww_mailfish_form_alter(&$form, &$form_state, $form_id){
   }
 }
 
-function ww_mailfish_signups() {
-  return t('This a test for the module');
-}
+//function ww_mailfish_signups() {
+//  return t('This a test for the module');
+//}
 
 /**
 * Provide the form to add an email address.

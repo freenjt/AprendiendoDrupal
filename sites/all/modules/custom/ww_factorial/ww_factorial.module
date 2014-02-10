@@ -28,122 +28,6 @@ function ww_factorial_menu() {
   return $items;
 }
 
-/**
- * Implements hook_node_load().
- */
-//function ww_factorial_node_load($nodes, $types){
-//  dpm($nodes,'nodes');
-//  foreach ($nodes as $nid => $node) {
-//    // Add ww_factorial data to the node object when it is loaded.
-//    $node->factorial = ww_factorial_get_node_enabled($node->nid_factorial);
-//  }
-//}
-//
-///**
-//* Implements hook_node_insert().
-//*/
-//function ww_factorial_node_insert($node) {
-//  if ($node->factorial) {
-//    // If MailFish is enabled, store the record.
-//    ww_factorial_set_node_enabled($node->nid_factorial);
-//  }
-//}
-//
-///**
-//* Implements hook_node_update().
-//*/
-//function ww_factorial_node_update($node) {
-//  // Delete the old record, if one exists.
-//  ww_factorial_delete_node_enabled($node->nid_factorial);
-//  if ($node->factorial) {
-//    // If MailFish is enabled, store the record.
-//    ww_factorial_set_node_enabled($node->nid_factorial);
-//  }
-//}
-//
-///**
-//* Implements hook_node_view().
-//*/
-//function ww_factorial_node_view($node, $view_mode, $langcode) {
-//// If appropriate, add the mailfish email form to the node's display.
-//  if ($node->factorial && user_access('configure my module')) {
-//    $node->content['factorial'] = array(
-//      '#markup' => drupal_render(
-//        drupal_get_form('mailfish_email_form', $node->nid)),'#weight' => 100,
-//    );
-//  }
-//}
-//
-///**
-//* Implements hook_node_delete().
-//*/
-//function ww_factorial_node_delete($node) {
-//  // Delete the mailfish_enabled record when the node is deleted.
-//  ww_factorial_delete_node_enabled($node->nid); 
-//}
-//
-//function ww_factorial_get_node_enabled($nid) {
-//  if (is_numeric($nid)) {
-//    $result = db_query("SELECT nid_factorial FROM {factorial} WHERE nid= :nid", array('nid' => $nid))->fetchField();
-//    if ($result) {  
-//      return TRUE;
-//    }
-//  }
-//  return FALSE;
-//}
-//
-///**
-//  * Add an entry for a node's ww_factorial setting.
-//  *
-//  * @param int $nid
-//  * The node id of the node in question.
-//  */
-//function ww_factorial_set_node_enabled($nid) {
-//  if (is_numeric($nid)) {
-//    if (!ww_factorial_get_node_enabled($nid)) {
-//      $jump = db_insert('ww_factorial_enabled')
-//      ->fields(array('nid' => $nid))
-//      ->execute();
-//    }
-//  }
-//}
-//
-///**
-// * Remove an entry for a node's ww_factorial setting.
-// * @param int $nid
-// * The node id of the node in question.* 
-// */
-//
-//function ww_factorial_delete_node_enabled($nid) {
-//  if (is_numeric($nid)) {
-//    $vump = db_delete('ww_factorial_enabled')
-//    ->condition('nid', $nid)
-//    ->execute();
-//  }
-//}
-//
-///**
-//* Store a ww_factorial email signup.
-//*/
-//function ww_factorial_signup($email, $nid, $account = NULL) {
-//  if (is_null($account)) {
-//  global $user;
-//  $account = $user;
-//  }
-//  $value = array(
-//    'nid' => $nid,
-//    'uid' => $account->uid,
-//    'mail' => $email,
-//    'created' => time(),
-//  );
-//  drupal_alter('ww_factorial_signup', $value);
-//  module_invoke_all('ww_factorial_signup', $value);
-//  $_SESSION['ww_factorial'] = $nid;
-//  drupal_write_record('ww_factorial', $value);
-//  watchdog('ww_factorial', 'User @uid signed up for node @nid with
-//  @email', array('@uid' => $account->uid, '@nid' => $nid, '@email' =>
-//  $email));
-//}
 
 /**
  * Implements hook_permission().
@@ -210,3 +94,176 @@ function ww_factorial_menu_alter(&$items) {
   }
   //dpm($variables, 'VARIABLES');
 }
+
+/**
+ * Implements hook_node_info().
+ *
+ * We use hook_node_info() to define our node content type.
+ */
+function ww_factorial_node_info() {
+  // We define the node type as an associative array.
+  return array(
+    'ww_factorial' => array(
+      'name' => t('Example Node Type'),
+      // 'base' tells Drupal the base string for hook functions.
+      // This is often the module name; if base is set to 'mymodule',
+      // Drupal would call mymodule_insert() or similar for node
+      // hooks. In our case, the base is 'ww_factorial'.
+      'base' => 'ww_factorial',
+      'description' => t('This is an example node type with a few fields.'),
+      'title_label' => t('Example of Title'),
+      // We'll set the 'locked' attribute to TRUE, so users won't be
+      // able to change the machine name of our content type.
+      'locked' => TRUE,
+    ),
+  );
+}
+
+/**
+ * Implements hook_node_type_insert().
+ *
+ * Much like hook_node_insert() lets us know that a node is being
+ * inserted into the database, hook_node_type_insert() lets us know
+ * that a new content type has been inserted.
+ *
+ * Since Drupal will at some point insert our new content type,
+ * this gives us a chance to add the fields we want.
+ *
+ * It is called for all inserts to the content type database, so
+ * we have to make sure we're only modifying the type we're
+ * concerned with.
+ */
+function ww_factorial_node_type_insert($content_type) {
+ dpm($content_type,'content_type');
+  if ($content_type->type == 'ww_factorial') {
+    // First we add the body field. Node API helpfully gives us
+    // node_add_body_field().
+    // We'll set the body label now, although we could also set
+    // it along with our other instance properties later.
+    $body_instance = node_add_body_field($content_type, t('Example Description'));
+
+    // Add our example_node_list view mode to the body instance
+    // display by instructing the body to display as a summary
+    $body_instance['display']['example_node_list'] = array(
+      'label' => 'hidden',
+      'type' => 'text_summary_or_trimmed',
+    );
+
+    // Save our changes to the body field instance.
+    field_update_instance($body_instance);
+
+    // Create all the fields we are adding to our content type.
+    foreach (_ww_factorial_installed_fields() as $field) {
+      field_create_field($field);
+    }
+//
+    // Create all the instances for our fields.
+    foreach (_ww_factorial_installed_instances() as $instance) {
+      $instance['entity_type'] = 'node';
+      $instance['bundle'] = 'ww_factorial';
+      field_create_instance($instance);
+    }
+  }
+}
+
+/**
+ * Define the fields for our content type.
+ *
+ * This big array is factored into this function for readability.
+ *
+ * @return
+ *  An associative array specifying the fields we wish to add to our
+ *  new node type.
+ */
+function _ww_factorial_installed_fields() {
+  return array(
+    'ww_factorial_color' => array(
+      'field_name' => 'ww_factorial_color',
+      'cardinality' => 3,
+      'type'        => 'text',
+      'settings'    => array(
+        'max_length' => 60,
+      ),
+    ),
+    'ww_factorial_quantity' => array(
+      'field_name'  => 'ww_factorial_quantity',
+      'cardinality' => 1,
+      'type'        => 'text',
+    ),
+    'ww_factorial_image' => array(
+      'field_name' => 'ww_factorial_image',
+      'type'       => 'image',
+      'cardinality' => 1,
+    ),
+  );
+}
+
+/**
+ * Define the field instances for our content type.
+ *
+ * The instance lets Drupal know which widget to use to allow the user to enter
+ * data and how to react in different view modes.  We are going to display a
+ * page that uses a custom "ww_factorial_list" view mode.  We will set a
+ * cardinality of three allowing our content type to give the user three color
+ * fields.
+ *
+ * This big array is factored into this function for readability.
+ *
+ * @return
+ *  An associative array specifying the instances we wish to add to our new
+ *  node type.
+ */
+function _ww_factorial_installed_instances() {
+  return array(
+    'ww_factorial_color' => array(
+      'field_name' => 'ww_factorial_color',
+      'label'       => t('The colors available for this object.'),
+      'widget'      => array(
+        'type'    => 'text_textfield',
+      ),
+      'display' => array(
+        'example_node_list' => array(
+          'label' => 'hidden',
+          'type' => 'ww_factorial_colors',
+        ),
+      ),
+    ),
+    'ww_factorial_quantity' => array(
+      'field_name'  => 'ww_factorial_quantity',
+      'label' => t('Quantity required'),
+      'type'        => 'text',
+      'widget'      => array(
+        'type'    => 'text_textfield',
+      ),
+      'display' => array(
+        'example_node_list' => array(
+          'label' => 'hidden',
+          'type' => 'hidden',
+        ),
+      ),
+    ),
+    'ww_factorial_image' => array(
+      'field_name'  => 'ww_factorial_image',
+      'label'       => t('Upload an image:'),
+      'required'    => FALSE,
+      'widget' => array(
+        'type'    => 'image_image',
+        'weight'  => 2.10,
+      ),
+      'display' => array(
+        'example_node_list' => array(
+          'label' => 'hidden',
+          'type' => 'image_link_content__thumbnail',
+        ),
+      ),
+    ),
+  );
+}
+
+//function ww_factorial_entity_info_alter(&$entity_info) {
+//  // Add our new view mode to the list of view modes...
+//  $entity_info['node']['view modes']['example_node_list'] = array(
+//    'label' => t('Example Node List'),
+//    'custom settings' => TRUE,
+//  );
+//}
