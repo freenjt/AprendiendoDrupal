@@ -25,6 +25,15 @@ function ww_factorial_menu() {
     'access arguments' => array('configure my module'),
     'file' => 'ww_factorial_operacion.inc',
   );
+  $items['funcion/numeros'] = array(
+    'title' => "Listando numeros",
+    'description' => t('This is a test.'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('list_numbers_form'),
+    'access arguments' => array('administer my module'),
+    //'access callback' => TRUE,
+    'file' => 'ww_factorial_operacion.inc',
+    );
   return $items;
 }
 

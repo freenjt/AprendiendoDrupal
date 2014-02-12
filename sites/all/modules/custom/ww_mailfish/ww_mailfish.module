@@ -18,6 +18,7 @@ function ww_mailfish_menu() {
   );
   return $items;
 }
+
 /**
  * Implements hook_permission().
  * @return perm. 
