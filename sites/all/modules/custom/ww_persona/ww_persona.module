@@ -39,6 +39,15 @@ function ww_persona_menu(){
     'access arguments' => array('delete people',2),
     'file' => 'ww_persona_forms.inc',
   );
+   $items['persona/tabledrag']=array(
+    'title' => t('Table draggable'),
+    'description' => t('This is a form for dragg tables'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('table_dragg_form'),
+    'access callback' => TRUE,
+    //'access arguments' => array('delete people',2),
+    'file' => 'ww_persona_forms.inc',
+  );
   return $items;
 }
 
@@ -113,6 +122,7 @@ function people_list($form, &$form_state) {
   $query = db_select('persona', 'p')
     ->extend('PagerDefault') 
     ->fields('p')
+    ->orderBy('weight', 'ASC')
     ->limit($limit_peoples);
   if($verificar_nombre != ''){
     $query = $query->condition('name_people', '%' . db_like($verificar_nombre) . '%', 'LIKE');
@@ -122,10 +132,10 @@ function people_list($form, &$form_state) {
     ->fetchAll();
   if($verificar_nombre != '' && count($query)<=0){
     $arreglo=explode(" ", $verificar_nombre, 7);
-    dpm($arreglo,'arreglo');
      $query = db_select('persona', 'p')
     ->extend('PagerDefault') 
     ->fields('p')
+    ->orderBy('weight', 'ASC')
     ->limit($limit_peoples);
      $or = db_or();
     for($i=0; $i<count($arreglo); $i++){
@@ -140,22 +150,14 @@ function people_list($form, &$form_state) {
   foreach ($query as $record_table_edit) { 
     //output a row that comtains 
     $rows_table_edit[] = array(  
-      // in first cell there is an entry  
-      array(   
-        'data' => t($record_table_edit -> id_people) 
+      // in first cell there is an entry
+      'data' => array(
+          t($record_table_edit -> id_people),
+          t($record_table_edit->name_people),
+          t($record_table_edit->email_people),
+          l(t('Edit'),'persona/edit/'.$record_table_edit->id_people),
+          l(t('Delete'),'persona/delete/'.$record_table_edit->id_people) 
       ),  
-      array(  
-        'data' => t($record_table_edit->name_people) 
-      ),
-      array(  
-        'data' => t($record_table_edit->email_people) 
-      ),
-      array(  
-        'data' => l(t('Edit'),'persona/edit/'.$record_table_edit->id_people) 
-      ),
-      array(  
-        'data' => l(t('Delete'),'persona/delete/'.$record_table_edit->id_people) 
-      ),
     );  
   } 
   if(count($query) <= 0){
@@ -182,9 +184,9 @@ function people_list($form, &$form_state) {
   dpm($build);
   $path = drupal_get_path('module', 'ww_persona');
   
-  $build['#attached']['css'][] = $path . '/css/style.css'; 
-  dpm($path . '/css/style.css');
-  drupal_add_css($path . '/css/style.css');
+  $build['#attached']['css'][] = $path . '/css/mi_estilo.css'; 
+  //dpm($path . '/css/style.css');
+  drupal_add_css($path . '/css/mi_estilo.css');
   return $build;
 }
 
@@ -206,13 +208,13 @@ function my_search_form($form, &$form_state) {
     '#maxlength' => 20,
   );
 $path = drupal_get_path('module', 'ww_persona');
-    $form['#attached']['css'][] = $path . '/css/style.css'; 
-drupal_add_css($path . '/css/style.css');
+    $form['#attached']['css'][] = $path . '/css/mi_estilo.css'; 
+drupal_add_css($path . '/css/mi_estilo.css');
   $form['criteria']['submit'] = array(
     '#type' => 'submit',
     '#value' => 'search',
     //'#theme' => 'button',
-    '#attributes' => array('class' => array('button')),
+    '#attributes' => array('class' => array('botones')),
     '#submit' => array('my_search_form_submit'),
   );
   
@@ -304,13 +306,20 @@ function ww_persona_block_view($delta=''){
 /**
  * Implements hook_theme().
  */
-//function ww_persona_theme(){
-//  return array(
-//    'people_list' => array(
-//      'template' => 'ww_persona',
+function ww_persona_theme() {
+  return array(
+    // Theme function for the 'simple' example.
+    'table_dragg_form' => array(
+      'render element' => 'form',
+      'file' => 'ww_persona_forms.inc',
+    ),
+//    // Theme function for the 'parent/child' example.
+//    'tabledrag_example_parent_form' => array(
+//      'render element' => 'form',
+//      'file' => 'tabledrag_example_parent_form.inc',
 //    ),
-//  );
-//}
+  );
+}
 
 /**
  * Implements hook_form_alter().

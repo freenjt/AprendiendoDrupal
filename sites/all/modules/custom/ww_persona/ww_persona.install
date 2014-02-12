@@ -26,6 +26,14 @@ function ww_persona_schema(){
         'not null' => FALSE,  
         //'unique' => TRUE,  
       ),
+      'weight' => array(
+        'description' => 'The sortable weight for this item.',
+        'type' => 'int',
+        'length' => 11,
+        //'not null' => FALSE, 
+        'default' => 0, 
+        //'unique' => TRUE,  
+      ),
     ),
     'primary_key' => array('id_people'),
     'unique keys' => array(
@@ -73,4 +81,12 @@ function ww_persona_update_7200(){
     )
     )
    );
+}
+
+/**
+ * Funcion para agregar un nuevo campo weight
+ */
+function ww_persona_update_7300() {
+	$schema=drupal_get_schema('persona');
+  db_add_field('persona','weight',$schema['fields']['weight']);
 }

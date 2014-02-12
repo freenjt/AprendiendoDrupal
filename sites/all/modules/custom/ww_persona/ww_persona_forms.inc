@@ -226,3 +226,189 @@ function people_delete_submit($form, &$form_state){
   }
 
 }
+
+/**
+ * Formulario de arrastrar tabla
+ */
+function table_dragg_form($form_state){
+  $form['example_items']['#tree'] = TRUE;
+  //$result = db_query('SELECT id, name, description, weight FROM {tabledrag_example} WHERE id < 8 ORDER BY weight ASC');
+  $result=db_select('persona' , 'p')
+    ->fields('p')
+    ->orderBy('weight', 'ASC')
+    ->extend('PagerDefault')
+    ->limit(3)
+    ->execute();
+  
+    foreach ($result as $item) {
+//dpm($item, 'item');
+    // Create a form entry for this item.
+    //
+    // Each entry will be an array using the the unique id for that item as
+    // the array key, and an array of table row data as the value.
+    $form['example_items'][$item->id_people] = array(
+
+      // We'll use a form element of type '#markup' to display the item name.
+      'name' => array(
+        '#markup' => check_plain($item->name_people),
+      ),
+
+      // We'll use a form element of type '#textfield' to display the item
+      // description, which will allow the value to be changed via the form.
+      // We limit the input to 255 characters, which is the limit we set on
+      // the database field.
+      'email' => array(
+//        '#type' => 'textfield',
+//        '#default_value' => check_plain($item->description),
+//        '#size' => 20,
+//        '#maxlength' => 255,
+        '#markup' => check_plain($item->email_people),  
+      ),
+
+      // The 'weight' field will be manipulated as we move the items around in
+      // the table using the tabledrag activity.  We use the 'weight' element
+      // defined in Drupal's Form API.
+      'weight' => array(
+        '#type' => 'weight',
+        '#title' => t('Weight'),
+        '#default_value' => $item->weight,
+        '#delta' => 10,
+        '#title_display' => 'invisible',
+      ),
+      'edit' => array(
+//        '#type' => 'textfield',
+//        '#default_value' => check_plain($item->description),
+//        '#size' => 20,
+//        '#maxlength' => 255,
+        '#markup' => l(t('Edit'),'persona/edit/'.$item->id_people),  
+      ),
+      'delete' => array(
+//        '#type' => 'textfield',
+//        '#default_value' => check_plain($item->description),
+//        '#size' => 20,
+//        '#maxlength' => 255,
+        '#markup' => l(t('Delete'),'persona/delete/'.$item->id_people),  
+      ),
+    );
+  }
+  $form['actions'] = array('#type' => 'actions');
+  $form['actions']['submit'] = array('#type' => 'submit', '#value' => t('Save Changes'));
+  return $form;
+}
+
+function theme_table_dragg_form($variables) {
+  $form = $variables['form'];
+
+  // Initialize the variable which will store our table rows.
+  $rows = array();
+
+  // Iterate over each element in our $form['example_items'] array.
+  dpm(element_children($form['example_items']),'element_children');
+  foreach (element_children($form['example_items']) as $id) {
+    //drupal_set_message(t('id = @id', $id));
+    // Before we add our 'weight' column to the row, we need to give the
+    // element a custom class so that it can be identified in the
+    // drupal_add_tabledrag call.
+    //
+    // This could also have been done during the form declaration by adding
+    // '#attributes' => array('class' => 'example-item-weight'),
+    // directy to the 'weight' element in tabledrag_example_simple_form().
+    $form['example_items'][$id]['weight']['#attributes']['class'] = array('example-item-weight');
+
+    // We are now ready to add each element of our $form data to the $rows
+    // array, so that they end up as individual table cells when rendered
+    // in the final table.  We run each element through the drupal_render()
+    // function to generate the final html markup for that element.
+    $rows[] = array(
+      'data' => array(
+        // Add our 'name' column.
+        drupal_render($form['example_items'][$id]['name']),
+        // Add our 'description' column.
+        drupal_render($form['example_items'][$id]['email']),
+        // Add our 'weight' column.
+        drupal_render($form['example_items'][$id]['weight']),
+        drupal_render($form['example_items'][$id]['edit']),
+        drupal_render($form['example_items'][$id]['delete']),
+      ),
+      // To support the tabledrag behaviour, we need to assign each row of the
+      // table a class attribute of 'draggable'. This will add the 'draggable'
+      // class to the <tr> element for that row when the final table is
+      // rendered.
+      'class' => array('draggable'),
+    );
+  }
+
+  // We now define the table header values.  Ensure that the 'header' count
+  // matches the final column count for your table.
+  $header = array(t('Name'), t('Email'), t('Weight'), t('Edit'), t('Delete'));
+
+  // We also need to pass the drupal_add_tabledrag() function an id which will
+  // be used to identify the <table> element containing our tabledrag form.
+  // Because an element's 'id' should be unique on a page, make sure the value
+  // you select is NOT the same as the form ID used in your form declaration.
+  $table_id = 'example-items-table';
+
+  // We can render our tabledrag table for output.
+  $output = theme('table', array(
+    'header' => $header,
+    'rows' => $rows,
+    'attributes' => array('id' => $table_id),
+  ));
+  $output .= theme('pager');
+
+  // And then render any remaining form elements (such as our submit button).
+  $output .= drupal_render_children($form);
+
+  // We now call the drupal_add_tabledrag() function in order to add the
+  // tabledrag.js goodness onto our page.
+  //
+  // For a basic sortable table, we need to pass it:
+  // - the $table_id of our <table> element,
+  // - the $action to be performed on our form items ('order'),
+  // - a string describing where $action should be applied ('siblings'),
+  // - and the class of the element containing our 'weight' element.
+  drupal_add_tabledrag($table_id, 'order', 'sibling', 'example-item-weight');
+  
+  return $output;
+}
+
+function my_search_form2($form, &$form_state) {
+  $form['criteria'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Search Criteria',
+    '#attributes' => array('class' => array('container-inline')),
+  );
+
+  $form['criteria']['name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Name people'),
+    '#value' => (isset($form_state['input']['name'])) ? $form_state['input']['name'] : "",
+    '#size' => 40,
+    '#maxlength' => 20,
+  );
+$path = drupal_get_path('module', 'ww_persona');
+    $form['#attached']['css'][] = $path . '/css/mi_estilo.css'; 
+drupal_add_css($path . '/css/mi_estilo.css');
+  $form['criteria']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => 'search',
+    //'#theme' => 'button',
+    '#attributes' => array('class' => array('botones')),
+    '#submit' => array('my_search_form_submit'),
+  );
+  
+  dpm($form);
+  return $form;
+}
+
+function table_dragg_form_submit($form, &$form_state) {
+  // Because the form elements were keyed with the item ids from the database,
+  // we can simply iterate through the submitted values.
+  foreach ($form_state['values']['example_items'] as $id => $item) {
+    db_query(
+      "UPDATE {persona} SET weight = :weight WHERE id_people = :id",
+      array(':weight' => $item['weight'], ':id' => $id)
+    );
+  }
+}
+
