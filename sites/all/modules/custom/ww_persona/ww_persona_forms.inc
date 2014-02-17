@@ -58,7 +58,7 @@ function valida_formularios(&$form_state, $opcion=0){
       ->execute();
     if($opcion == 1){
 
-      dpm($resultado,'resultado');
+      //dpm($resultado,'resultado');
         //$resultado;
       foreach ($resultado as $record) {
       //if($record->email_people == $form_state['values']['email']){
@@ -73,7 +73,7 @@ function valida_formularios(&$form_state, $opcion=0){
         ->execute()
         ->fetchAssoc();
       $compara=$resultado->fetchAssoc();
-      //dpm($compara,'compara');
+      
       if($compara != '' && $compara['email_people'] != $result['email_people']){
         form_set_error('email', t('Error email repetido'));
       }
@@ -105,7 +105,6 @@ function people_form_submit($form, &$form_state){
  * Implements formulario para editar persona
  */
 function people_edit($form, &$form_state, $id){
-  //dpm($id,'id');
    $valor=$id;
     $resultado=db_select('persona','p')
       ->fields('p')
@@ -230,16 +229,61 @@ function people_delete_submit($form, &$form_state){
 /**
  * Formulario de arrastrar tabla
  */
-function table_dragg_form($form_state){
+function table_dragg_form($form, &$form_state){
+  //dpm($form_state, 'form_state');
+  $limit_peoples = variable_get('limit_list_people');
+  $verificar_nombre=(isset($form_state['input']['name'])) ? $form_state['input']['name'] : '';
+  $form['criteria'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Search Criteria',
+    '#attributes' => array('class' => array('container-inline')),
+  );
+
+  $form['criteria']['name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Name people'),
+    '#value' => (isset($form_state['input']['name'])) ? $form_state['input']['name'] : "",
+    '#size' => 40,
+    '#maxlength' => 20,
+  );
+$path = drupal_get_path('module', 'ww_persona');
+    $form['#attached']['css'][] = $path . '/css/mi_estilo.css'; 
+drupal_add_css($path . '/css/mi_estilo.css');
+  $form['criteria']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => 'search',
+    //'#theme' => 'button',
+    '#attributes' => array('class' => array('botones')),
+    '#submit' => array('my_search_submit'),
+  );
+  
   $form['example_items']['#tree'] = TRUE;
   //$result = db_query('SELECT id, name, description, weight FROM {tabledrag_example} WHERE id < 8 ORDER BY weight ASC');
   $result=db_select('persona' , 'p')
     ->fields('p')
     ->orderBy('weight', 'ASC')
     ->extend('PagerDefault')
-    ->limit(3)
-    ->execute();
-  
+    ->limit($limit_peoples);
+    if($verificar_nombre != ''){
+    $result = $result->condition('name_people', '%' . db_like($verificar_nombre) . '%', 'LIKE');
+    
+    }
+   $result = $result -> execute();
+
+   if($verificar_nombre != '' && count($result->fetchAll())<=0){
+     $arreglo=explode(" ", $verificar_nombre, 7);
+     $result = db_select('persona', 'p')
+    ->extend('PagerDefault') 
+    ->fields('p')
+    ->orderBy('weight', 'ASC')
+    ->limit($limit_peoples);
+     $or = db_or();
+    for($i=0; $i<count($arreglo); $i++){
+      $or=$or->condition('name_people', '%' . db_like($arreglo[$i]) . '%', 'LIKE');
+      // $query = $query->condition('name_people', '%' . db_like($arreglo[$i]) . '%', 'LIKE')->condition($or);
+    }
+     $result = $result->condition($or)->execute(); 
+   }
     foreach ($result as $item) {
 //dpm($item, 'item');
     // Create a form entry for this item.
@@ -293,6 +337,7 @@ function table_dragg_form($form_state){
   }
   $form['actions'] = array('#type' => 'actions');
   $form['actions']['submit'] = array('#type' => 'submit', '#value' => t('Save Changes'));
+  dpm($form,'form');
   return $form;
 }
 
@@ -303,7 +348,7 @@ function theme_table_dragg_form($variables) {
   $rows = array();
 
   // Iterate over each element in our $form['example_items'] array.
-  dpm(element_children($form['example_items']),'element_children');
+ // dpm(element_children($form['example_items']),'element_children');
   foreach (element_children($form['example_items']) as $id) {
     //drupal_set_message(t('id = @id', $id));
     // Before we add our 'weight' column to the row, we need to give the
@@ -372,33 +417,14 @@ function theme_table_dragg_form($variables) {
   return $output;
 }
 
-function my_search_form2($form, &$form_state) {
-  $form['criteria'] = array(
-    '#type' => 'fieldset',
-    '#title' => 'Search Criteria',
-    '#attributes' => array('class' => array('container-inline')),
-  );
+function my_search_submit($form, &$form_state){
+ 
+  if(!empty ($form_state)){
+    //if($form_state['values']['name'])
 
-  $form['criteria']['name'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Name people'),
-    '#value' => (isset($form_state['input']['name'])) ? $form_state['input']['name'] : "",
-    '#size' => 40,
-    '#maxlength' => 20,
-  );
-$path = drupal_get_path('module', 'ww_persona');
-    $form['#attached']['css'][] = $path . '/css/mi_estilo.css'; 
-drupal_add_css($path . '/css/mi_estilo.css');
-  $form['criteria']['submit'] = array(
-    '#type' => 'submit',
-    '#value' => 'search',
-    //'#theme' => 'button',
-    '#attributes' => array('class' => array('botones')),
-    '#submit' => array('my_search_form_submit'),
-  );
+    $form_state['rebuild'] = TRUE;
+  }
   
-  dpm($form);
-  return $form;
 }
 
 function table_dragg_form_submit($form, &$form_state) {

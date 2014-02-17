@@ -1,0 +1,55 @@
+<?php
+
+/**
+ * Implements hook_schema().
+ */
+function usuario_schema(){
+  $schema['datos_usuario'] = array(
+    'description' => 'This is table usuario_persona',
+    'fields' => array(
+      'id_user' => array(
+        'description' => 'This is the foreign key of users.',
+        'type' => 'int',
+        'length' => 10,
+        //'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'id_usuario' => array(
+        'description' => 'This is the primary key of persona.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'fid' => array(
+        'description' => 'This is the foreign key of file_managed',
+        'type' => 'int',
+        'length' => 10,
+        //'not null' => FALSE, 
+        //'default' => 0, 
+        //'unique' => TRUE,  
+      ),
+    ),
+    'primary key' => array('id_usuario'),
+    'foreign keys' => array(
+      'file_managed' => array(
+        'table' => 'file_managed',
+        'columns' => array('fid' => 'fid'),
+      ),
+    ),
+  );  
+  return $schema;   
+}
+
+/**
+ * hook_uninstall().
+ */
+function usuario_uninstall(){
+
+}
+
+/**
+ * Funcion para crear tabla usuario_persona
+ */
+function usuario_update_7000(){
+  db_create_table('datos_usuario',drupal_get_schema('datos_usuario',TRUE));
+}
