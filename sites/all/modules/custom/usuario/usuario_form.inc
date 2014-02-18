@@ -1,14 +1,18 @@
 <?php
+
 /**
- * Definicion de constante que contiene el fid de la foto cargada por defecto.
+ * @file
+ * This file content information about forms.
+ *
+ * Contiene todos los formularios y sus debidas validaciones y envios.
  */
-define('VALOR_DEFECTO', 43);
 
 /**
  * Implements hook_form().
  */
-function subir_foto_form($form_state){
+function subir_foto_form($form_state) {
   global $user;
+  //capturar_dato();
   $query = consultar_foto();
   $form['contact'] = array(
     '#type' => 'fieldset', 
@@ -16,8 +20,8 @@ function subir_foto_form($form_state){
     '#collapsible' => TRUE, 
     '#collapsed' => FALSE,
   );
-  if($query == '') {
-  $file = file_load(VALOR_DEFECTO);
+  if ($query == '') {
+  $file = file_load(variable_get('valor_defecto', 0));
   }
   else {
     $file =file_load($query['fid']);
@@ -47,8 +51,9 @@ function subir_foto_form_validate($form, &$form_state) {
   // If the file passed validation:
   if ($file) {
     // Move the file, into the Drupal file system
-    if ($file = file_move($file, 'public://')) {
+    if ($file = file_copy($file, 'public://')) {
       // Save the file for use in the submit handler.
+      dpm($file, 'file');
       $form_state['storage']['file'] = $file;
     }
     else {
@@ -60,7 +65,7 @@ function subir_foto_form_validate($form, &$form_state) {
   }
 }
             
-function subir_foto_form_submit($form, &$form_state){
+function subir_foto_form_submit($form, &$form_state) {
   global $user;
   
   $file = $form_state['storage']['file'];
@@ -73,7 +78,7 @@ function subir_foto_form_submit($form, &$form_state){
   
   $query=consultar_foto();
   
-  if($query == ''){
+  if ($query == '') {
   db_insert('datos_usuario')
     ->fields(array(
       'id_user' => $user->uid,
@@ -100,8 +105,9 @@ function subir_foto_form_submit($form, &$form_state){
  * @global type $user
  * @return array 
  */
-function consultar_foto(){
+function consultar_foto() {
   global $user;
+  if (db_table_exists('datos_usuario')) {
   $query=db_select('datos_usuario', 'du')
     ->fields('du')
     ->condition('id_user', $user->uid)
@@ -109,3 +115,27 @@ function consultar_foto(){
     ->fetchAssoc();
   return $query;
 }
+}
+
+// function usuario_form_configure($form, &$form_state){
+
+
+//   $form['submit'] = array('#type' => 'submit', '#value' => t('Import image'));
+//   // $query = db_select('datos_usuario', 'du')
+//   //   ->fields('du')
+//   //   ->execute()
+//   //   ->fetchAssoc();
+
+//   // if($query == ''){
+//   //   db_insert('datos_usuario')
+//   //   ->fields(array(
+//   //     ''));  
+//   // }
+
+//   return $form;
+  
+// }
+
+// function usuario_form_configure_submit($form, &$form_state){
+
+// }
