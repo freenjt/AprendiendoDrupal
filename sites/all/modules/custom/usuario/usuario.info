@@ -1,0 +1,5 @@
+name=Formulario usuario
+description= Valida que el usuario tenga foto.
+core=7.x
+package=Modulos de prueba
+files[]= anonimo.jpg

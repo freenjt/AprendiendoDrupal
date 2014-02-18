@@ -1,0 +1,111 @@
+<?php
+
+/**
+ * @file
+ * Installation file for the Usuario module.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function usuario_schema() {
+  $schema['datos_usuario'] = array(
+    'description' => 'This is table usuario_persona',
+    'fields' => array(
+      'id_user' => array(
+        'description' => 'This is the foreign key of users.',
+        'type' => 'int',
+        'length' => 10,
+        //'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'id_usuario' => array(
+        'description' => 'This is the primary key of persona.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'fid' => array(
+        'description' => 'This is the foreign key of file_managed',
+        'type' => 'int',
+        'length' => 10,
+        //'not null' => FALSE, 
+        //'default' => 0, 
+        //'unique' => TRUE,  
+      ),
+    ),
+    'primary key' => array('id_usuario'),
+    'foreign keys' => array(
+      'file_managed' => array(
+        'table' => 'file_managed',
+        'columns' => array('fid' => 'fid'),
+      ),
+    ),
+  );  
+  return $schema;   
+}
+
+/**
+ * Implements hook_install().
+ */
+function usuario_install() {
+
+  $path = drupal_get_path('module', 'usuario');
+  $uri = $path . '/anonimo.jpg';
+  $filename = 'anonimo.jpg';
+
+  $file = new stdClass;
+  $file->uid = 0;
+  $file->filename = $filename;
+  $file->uri = $uri;
+  $file->filemime = 'image/jpeg';
+  $file->filesize = filesize($uri);
+  $file->status = 1;
+
+  // file_save($file)  
+   file_move($file, 'public://');
+   $query = db_select('file_managed', 'fm')
+    ->fields('fm')
+    ->condition('uid', $file->uid)
+    ->execute()
+    ->fetchAssoc();
+    if ($query != '') {
+      db_insert('datos_usuario')
+        ->fields(array(
+          'id_user' => 0,
+          'fid' => $query['fid'] 
+        ))
+        ->execute();  
+    }
+    capturar_dato();
+}
+
+function capturar_dato() {
+  if (db_table_exists('datos_usuario')) {
+    $query=db_select('datos_usuario', 'du')
+      ->fields('du')
+      ->condition('id_user', 0)
+      ->execute()
+      ->fetchAssoc();
+  }
+  if (isset($query) && $query != '') {
+    variable_set('valor_defecto', $query['fid']);
+  }
+  
+}
+
+/**
+ * hook_uninstall().
+ */
+function usuario_uninstall() {
+  db_drop_table('datos_usuario');
+  db_delete('file_managed')
+    ->execute();
+}
+
+/**
+ * Funcion para crear tabla usuario_persona
+ */
+function usuario_update_7000() {
+  db_create_table('datos_usuario', drupal_get_schema('datos_usuario', TRUE));
+}

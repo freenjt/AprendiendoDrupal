@@ -55,7 +55,11 @@ function operation_factorial_submit($form,&$form_state){
       $resultado=$resultado*$i;      
     }
   }
+<<<<<<< HEAD
   drupal_set_message(t('Result factorial= %resultado', array('%resultado' => $resultado)));
+=======
+drupal_set_message(t('Result factorial= %resultado', array('%resultado' => $resultado)));
+>>>>>>> master
 }
 
 /**
@@ -93,6 +97,10 @@ function list_numbers_form_submit($form, &$form_state){
 }
 
 function asignando_operaciones($id){
+<<<<<<< HEAD
+=======
+  $path = drupal_get_path('module', 'ww_factorial');
+>>>>>>> master
   $operations = array();
    drupal_set_message(t('Creating an array of @num operations', array('@num' => $id)));
   for($i=0; $i<$id; $i++){
@@ -103,7 +111,11 @@ function asignando_operaciones($id){
     'operations' => $operations,
     'finished' => 'asignando_operaciones_finished',
     //'error_message' => t('Batch has encountered an error.'),
+<<<<<<< HEAD
     'file' => 'ww_factorial_operacion.inc',
+=======
+    'file' => $path.'/ww_factorial_operacion.inc',
+>>>>>>> master
   );
   //dpm($batch,'batch');
   return $batch;

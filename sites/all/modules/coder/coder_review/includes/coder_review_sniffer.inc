@@ -145,3 +145,5 @@ function _coder_review_sniffer_warnings(array &$results, array $rule, array $lin
   }
 }
 
+
+
