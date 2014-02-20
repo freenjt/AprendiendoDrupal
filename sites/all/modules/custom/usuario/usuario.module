@@ -2,31 +2,22 @@
 
 /**
  * @file
- * Installation file for the Usuario module.
- * 
- * Este documento esta muy raro con su coder.
+ * Descripcion o resumen del modulo.
  */
 
 /**
  * Implements hook_menu().
  */
 function usuario_menu() {
-  $items['foto/usuario']=array(
+  $items['foto/usuario'] = array(
     'title' => 'Photo of user',
     'description' => 'This is a form for upload the photo of user',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('subir_foto_form'),
+    'access callback' => 'usuario_configura_permisos',
     'access arguments' => array('manage administer photo'),
     'file' => 'usuario_form.inc',
   );
-  //   $items['admin/config/content/foto']=array(
-  //   'title' => 'Photo of user',
-  //   'description' => 'This is a form for config the photo of user',
-  //   'page callback' => 'drupal_get_form',
-  //   'page arguments' => array('usuario_form_configure'),
-  //   'access arguments' => array('manage administer photo'),
-  //   'file' => 'usuario_form.inc',
-  // );
   return $items;
 }
 
@@ -36,50 +27,59 @@ function usuario_menu() {
 function usuario_permission() {
   return array(
     'manage administer photo' => array(
-    'title' => t('Change my photo'),
-    'description' => t('Perform administration tasks for my module.'),
+      'title' => t('Change my photo'),
+      'description' => t('Perform administration tasks for my module.'),
     ),
   );
 }
 
+function usuario_configura_permisos($permiso) {
+  if (user_is_logged_in()) {
+    return TRUE;
+  }
+  else {
+    return user_access($permiso);
+  }
+}
+
 /*
  * Implements hook_init().
- * 
+ *
  * Tambien existen las funciones hook_boot() y hook_preprocess_page() que cargan
  * en todas las paginas al igual que hook_init().
  */
+
 function usuario_init() {
   global $user;
-  
-  $destination=drupal_get_destination();
-    if (($destination['destination'] != 'foto/usuario' && $destination['destination'] != 'user/logout') && consultar_bd()) {
-      drupal_set_message(t('Redirecting to Photo user'));
-      drupal_goto('foto/usuario');
-    }
 
+  $destination = drupal_get_destination();
+  if (($destination['destination'] != 'foto/usuario' && $destination['destination'] != 'user/logout') && consultar_bd()) {
+    drupal_set_message(t('Redirecting to Photo user'));
+    drupal_goto('foto/usuario');
+  }
 }
 
 /**
  * Esta funcion consulta si existe un registro en la tabla datos_usuario, donde
  * pertenezca al usuario que actualmente esta logueado.
- * 
+ *
  * @global type $user
  * @return boolean
  */
 function consultar_bd() {
   global $user;
   if (db_table_exists('datos_usuario')) {
-  $query=db_select('datos_usuario', 'du')
-    ->fields('du')
-    ->condition('id_user', $user->uid)
-    ->execute()
-    ->fetchAssoc();
-  if ($query == '') {
-    return TRUE;
-  }
-  else {
-    return FALSE;
-  }
+    $query = db_select('datos_usuario', 'du')
+      ->fields('du')
+      ->condition('id_user', $user->uid)
+      ->execute()
+      ->fetchAssoc();
+    if ($query == '') {
+      return TRUE;
+    }
+    else {
+      return FALSE;
+    }
   }
 }
 
@@ -90,14 +90,14 @@ function usuario_block_info() {
   $blocks['foto_usuario'] = array(
     'info' => t('Mostrar foto usuario'),
     'region' => 'header',
-    'visibility' => BLOCK_VISIBILITY_NOTLISTED, 
-    'status' => 1, 
+    'visibility' => BLOCK_VISIBILITY_NOTLISTED,
+    'status' => 1,
   );
   return $blocks;
 }
 
 /**
- * Implements hook_block_view(). 
+ * Implements hook_block_view().
  */
 function usuario_block_view($delta = '') {
   $form = array();
@@ -107,12 +107,11 @@ function usuario_block_view($delta = '') {
       $block['content'] = bloque_foto();
       return $block;
       break;
-    
   }
 }
 
 /**
- * Funcion que retorna un formulario que contiene la foto del usuario.  
+ * Funcion que retorna un formulario que contiene la foto del usuario.
  */
 function bloque_foto() {
   global $user;
@@ -124,12 +123,52 @@ function bloque_foto() {
   if ($query == '') {
     $file = file_load(variable_get('valor_defecto', 0));
   }
-  else{
+  else {
     $file = file_load($query['fid']);
   }
-  $image = theme('image', array('path' => $file->uri, 'alt' => 'Alt text', 'height' => 100));
-  $form['contact']['imagen']=array(
-    '#markup' => $image  
+  //$imagen_cargada=image_load($file->uri);
+  $image = theme('image_style', array('path' => $file->uri, 'alt' => 'Alt text', 'style_name' => 'miEstiloImage'));
+  //$image = theme('image', array('path' => $file->uri, 'alt' => 'Alt text'));
+//   dpm($image, 'image');
+//   $mostrar_image=theme($image);
+
+  $form['contact']['imagen'] = array(
+    '#markup' => $image
   );
   return $form;
+}
+
+/**
+ * Implements hook_image_default_styles();
+ */
+function usuario_image_default_styles() {
+  $styles = array();
+
+  $styles['miEstiloImage'] = array(
+    'effects' => array(
+      array(
+        'name' => 'image_scale_and_crop',
+        'data' => array(
+          'width' => 120,
+          'height' => 120,
+          'upscale' => 1,
+        ),
+        'weight' => 0,
+      ),
+    ),
+  );
+
+  return $styles;
+}
+
+/**
+ * Implements hook_field_formatter_info();
+ */
+function usuario_field_formatter_info() {
+  return array(
+    'url_usuario' => array(
+      'label' => t('field link'),
+      'field types' => array('link_field'),
+    )
+  );
 }

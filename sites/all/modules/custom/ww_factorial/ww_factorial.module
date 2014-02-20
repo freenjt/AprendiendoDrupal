@@ -1,7 +1,9 @@
 <?php
 
 /**
- * Ejemplo de calculo de factorial.
+ * @file
+ * Este modulo sirve para sacar el factorial de un numero, entre otras 
+ * funciones.
  */
 
 /**
@@ -10,16 +12,16 @@
 function ww_factorial_menu() {
   $items['calculo/factorial'] = array(
     'title' => "Calculando factorial",
-    'description' => t('This is a test.'),
+    'description' => 'This is a test.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('operation_factorial_form'),
     'access arguments' => array('administer my module'),
     'access callback' => TRUE,
     'file' => 'ww_factorial_operacion.inc',
-    );
+  );
   $items['admin/config/content/calculo'] = array(
     'title' => 'Factorial',
-    'description' => t('Configure the options for the factorial'),
+    'description' => 'Configure the options for the factorial',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('factorial_configuracion'),
     'access arguments' => array('configure my module'),
@@ -27,36 +29,34 @@ function ww_factorial_menu() {
   );
   $items['funcion/numeros'] = array(
     'title' => "Listando numeros",
-    'description' => t('This is a test.'),
+    'description' => 'This is a test.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('list_numbers_form'),
     'access arguments' => array('administer my module'),
     //'access callback' => TRUE,
     'file' => 'ww_factorial_operacion.inc',
-    );
+  );
   return $items;
 }
-
 
 /**
  * Implements hook_permission().
  */
-
 function ww_factorial_permission() {
   return array(
     'administer my module' => array(
       'title' => t('Administer my module'),
       'description' => t('Perform administration tasks for my module.'),
-      ),
-     'configure my module' => array(
-       'title' => t('Configure my module'),
-       'description' => t('Site for configure the module of factorial'),
-     ),
+    ),
+    'configure my module' => array(
+      'title' => t('Configure my module'),
+      'description' => t('Site for configure the module of factorial'),
+    ),
   );
 }
 
-function ww_factorial_menu_entrar(){
-  $num=rand(0, 1);
+function ww_factorial_menu_entrar() {
+  $num = rand(0, 1);
   //dpm($num,'num');
   // Ejemplo.
   if ($num > 0.5) {
@@ -72,23 +72,23 @@ function ww_factorial_menu_entrar(){
  */
 
 function ww_factorial_block_info() {
-    $blocks = array();
+  $blocks = array();
 
-    $blocks['info'] = array(
-        'info' => t('Factorial')
-    );
+  $blocks['info'] = array(
+    'info' => t('Factorial')
+  );
 
-    return $blocks;
+  return $blocks;
 }
 
 /**
  * Implements hook_block_view
  */
 function ww_factorial_block_view($delta = '') {
-    $block = array();
-    $block['subject'] = t('Block of factorial');
-    $block['content'] = t('This is a example');
-    return $block;
+  $block = array();
+  $block['subject'] = t('Block of factorial');
+  $block['content'] = t('This is a example');
+  return $block;
 }
 
 /**
@@ -98,8 +98,8 @@ function ww_factorial_menu_alter(&$items) {
   $variables = array(
     'message' => variable_get('titulo_factorial', 'Calculando factorial'),
   );
-  if(!empty ($variables)){
-  $items['calculo/factorial']['title']=$variables;
+  if (!empty($variables)) {
+    $items['calculo/factorial']['title'] = $variables;
   }
   //dpm($variables, 'VARIABLES');
 }
@@ -143,7 +143,7 @@ function ww_factorial_node_info() {
  * concerned with.
  */
 function ww_factorial_node_type_insert($content_type) {
- dpm($content_type,'content_type');
+  dpm($content_type, 'content_type');
   if ($content_type->type == 'ww_factorial') {
     // First we add the body field. Node API helpfully gives us
     // node_add_body_field().
@@ -189,19 +189,19 @@ function _ww_factorial_installed_fields() {
     'ww_factorial_color' => array(
       'field_name' => 'ww_factorial_color',
       'cardinality' => 3,
-      'type'        => 'text',
-      'settings'    => array(
+      'type' => 'text',
+      'settings' => array(
         'max_length' => 60,
       ),
     ),
     'ww_factorial_quantity' => array(
-      'field_name'  => 'ww_factorial_quantity',
+      'field_name' => 'ww_factorial_quantity',
       'cardinality' => 1,
-      'type'        => 'text',
+      'type' => 'text',
     ),
     'ww_factorial_image' => array(
       'field_name' => 'ww_factorial_image',
-      'type'       => 'image',
+      'type' => 'image',
       'cardinality' => 1,
     ),
   );
@@ -226,9 +226,9 @@ function _ww_factorial_installed_instances() {
   return array(
     'ww_factorial_color' => array(
       'field_name' => 'ww_factorial_color',
-      'label'       => t('The colors available for this object.'),
-      'widget'      => array(
-        'type'    => 'text_textfield',
+      'label' => t('The colors available for this object.'),
+      'widget' => array(
+        'type' => 'text_textfield',
       ),
       'display' => array(
         'example_node_list' => array(
@@ -238,11 +238,11 @@ function _ww_factorial_installed_instances() {
       ),
     ),
     'ww_factorial_quantity' => array(
-      'field_name'  => 'ww_factorial_quantity',
+      'field_name' => 'ww_factorial_quantity',
       'label' => t('Quantity required'),
-      'type'        => 'text',
-      'widget'      => array(
-        'type'    => 'text_textfield',
+      'type' => 'text',
+      'widget' => array(
+        'type' => 'text_textfield',
       ),
       'display' => array(
         'example_node_list' => array(
@@ -252,12 +252,12 @@ function _ww_factorial_installed_instances() {
       ),
     ),
     'ww_factorial_image' => array(
-      'field_name'  => 'ww_factorial_image',
-      'label'       => t('Upload an image:'),
-      'required'    => FALSE,
+      'field_name' => 'ww_factorial_image',
+      'label' => t('Upload an image:'),
+      'required' => FALSE,
       'widget' => array(
-        'type'    => 'image_image',
-        'weight'  => 2.10,
+        'type' => 'image_image',
+        'weight' => 2.10,
       ),
       'display' => array(
         'example_node_list' => array(
