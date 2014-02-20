@@ -172,3 +172,37 @@ function usuario_field_formatter_info() {
     )
   );
 }
+
+/**
+ * Implements hook_field_formatter_view();
+ */
+function usuario_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+  switch ($display['type']) {
+    case 'url_usuario':
+      foreach ($items as $delta => $item) {
+        $element[$delta] = array(
+          '#theme' => 'usuario_url',
+          '#title' => $entity->field_url_usuario['und'][0]['title'],
+          '#url' => $entity->field_url_usuario['und'][0]['url'],
+        );
+      }
+      break;
+  }
+  return $element;
+}
+
+/**
+ * Implements hook_theme();
+ */
+function usuario_theme() {
+  return array(
+    'usuario_url' => array(
+      'template' => 'usuario_url',
+      'variables' => array(
+        'title' => NULL,
+        'url' => NULL,
+      ),
+    ),
+  );
+}

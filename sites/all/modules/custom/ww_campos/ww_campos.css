@@ -1,0 +1,38 @@
+/* 
+    Document   : ww_campos
+    Created on : 20/02/2014, 12:04:10 PM
+    Author     : FreenJimenez
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+/* 
+   TODO customize this sample style
+   Syntax recommendation http://www.w3.org/TR/REC-CSS2/
+*/
+
+root { 
+    display: block;
+}
+
+.field-type-dnd-fields-skill {
+    display: inline-block;
+    width: 100%;
+}
+.dnd-fields-skill-field {
+    float: left;
+    margin: 0 10px 0 0;
+}
+.dnd-fields-skill-ranks-field .form-text {
+    width: 52px;
+}
+.dnd-fields-skill-field label {
+    font-weight: normal;
+    font-size: 12px;
+    padding: 0 0 2px;
+}
+.dnd-fields-skill-ranks-field .form-item .description {
+    width: 200px;
+    display: none;
+}
+
