@@ -3,6 +3,8 @@
 /**
  * @file
  * Installation file for the Usuario module.
+ *
+ * Este modulo contiene la funcionalidad necesaria para trabajar con la base de datos.
  */
 
 /**
@@ -29,9 +31,9 @@ function usuario_schema() {
         'description' => 'This is the foreign key of file_managed',
         'type' => 'int',
         'length' => 10,
-      //'not null' => FALSE, 
-      //'default' => 0, 
-      //'unique' => TRUE,  
+        //'not null' => FALSE, 
+        //'default' => 0, 
+        //'unique' => TRUE,  
       ),
     ),
     'primary key' => array('id_usuario'),
@@ -41,8 +43,8 @@ function usuario_schema() {
         'columns' => array('fid' => 'fid'),
       ),
     ),
-  );
-  return $schema;
+  );  
+  return $schema;   
 }
 
 /**
@@ -63,26 +65,26 @@ function usuario_install() {
   $file->status = 1;
 
   // file_save($file)  
-  file_move($file, 'public://');
-  $query = db_select('file_managed', 'fm')
+   file_move($file, 'public://');
+   $query = db_select('file_managed', 'fm')
     ->fields('fm')
     ->condition('uid', $file->uid)
     ->execute()
     ->fetchAssoc();
-  if ($query != '') {
-    db_insert('datos_usuario')
-      ->fields(array(
-        'id_user' => 0,
-        'fid' => $query['fid']
-      ))
-      ->execute();
-  }
-  capturar_dato();
+    if ($query != '') {
+      db_insert('datos_usuario')
+        ->fields(array(
+          'id_user' => 0,
+          'fid' => $query['fid'] 
+        ))
+        ->execute();  
+    }
+    capturar_dato();
 }
 
 function capturar_dato() {
   if (db_table_exists('datos_usuario')) {
-    $query = db_select('datos_usuario', 'du')
+    $query=db_select('datos_usuario', 'du')
       ->fields('du')
       ->condition('id_user', 0)
       ->execute()
@@ -91,16 +93,16 @@ function capturar_dato() {
   if (isset($query) && $query != '') {
     variable_set('valor_defecto', $query['fid']);
   }
+  
 }
 
 /**
  * hook_uninstall().
  */
 function usuario_uninstall() {
-  $query = "delete fm, du from {file_managed} fm, {datos_usuario} du where fm.fid = du.fid";
-  db_query($query);
   db_drop_table('datos_usuario');
-  variable_del('valor_defecto');
+  db_delete('file_managed')
+    ->execute();
 }
 
 /**

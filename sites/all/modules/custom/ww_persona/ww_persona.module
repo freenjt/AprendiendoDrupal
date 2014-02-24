@@ -218,7 +218,6 @@ drupal_add_css($path . '/css/mi_estilo.css');
     '#submit' => array('my_search_form_submit'),
   );
   
-  dpm($form);
   return $form;
 }
 
@@ -325,7 +324,6 @@ function ww_persona_theme() {
  * Implements hook_form_alter().
  */
 function ww_persona_form_alter($form, &$form_state, $form_id){
-  dpm($form_id,'form_id');
   if ($form_id == 'search_block_form') {
     $form['actions']['submit']['#attributes']['class'][] = 'button';
   }

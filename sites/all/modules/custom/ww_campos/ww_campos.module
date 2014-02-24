@@ -3,6 +3,8 @@
 /**
  * @file
  * Este modulo es exclusivamente para crear campos y widgets.
+ * 
+ * Aqui tambien se añadio el trabajo con JQuery.
  */
 
 /**
@@ -58,6 +60,10 @@ function ww_campos_field_formatter_info() {
       'label' => t('link fields'),
       'field types' => array('text'),
     ),
+    'ww_colorbox' => array(
+      'label' => t('mi colorbox'),
+      'field types' => array('image'),
+    ),
   );
 }
 
@@ -66,15 +72,49 @@ function ww_campos_field_formatter_info() {
  */
 function ww_campos_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
   $element = array();
-
+  $path = drupal_get_path("module", "ww_campos");
   switch ($display['type']) {
 
     case 'ww_link':
-      $path = drupal_get_path('module', 'ww_campos');
       foreach ($items as $delta => $item) {
         $element[$delta] = array('#markup' => l(strip_tags($item['value']), $item['value']));
       }
       break;
+    case 'ww_colorbox':
+      drupal_add_library("ww_campos", "colorbox");
+
+      drupal_add_js($path . "/agregar_colorbox.js");
+
+      foreach ($items as $delta => $item) {
+
+        $direccion = file_create_url($item['uri']);
+
+        $element[$delta] = array(
+          '#theme' => 'image_formatter',
+          '#prefix' => '<p><a id="group1" href="' . $direccion . '" title="Mi imagen en colorbox">',
+          '#item' => $item,
+          '#image_style' => 'miEstiloImage',
+          '#suffix' => '</a></p>',
+        );
+      }
   }
   return $element;
+}
+
+/**
+ * Implements hook_library();
+ */
+function ww_campos_library() {
+  $libraries['colorbox'] = array(
+    'title' => 'Libreria de colorbox',
+    'website' => 'http://www.jacklmoore.com/colorbox/',
+    'version' => '1.4.34',
+    'js' => array(
+      drupal_get_path('module', 'ww_campos') . '/colorbox/jquery.colorbox.js' => array(),
+    ),
+    'css' => array(
+      drupal_get_path('module', 'ww_campos') . '/colorbox/example1/colorbox.css' => array(),
+    ),
+  );
+  return $libraries;
 }

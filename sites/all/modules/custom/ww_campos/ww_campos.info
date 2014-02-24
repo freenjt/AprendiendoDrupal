@@ -2,3 +2,4 @@ name = ww_campos
 description = Este modulo se utiliza para crear campos y widgets.
 core = 7.x
 package = Modulos de prueba
+dependencies[] = libraries (2.x)
