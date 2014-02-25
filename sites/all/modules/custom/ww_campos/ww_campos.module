@@ -3,7 +3,7 @@
 /**
  * @file
  * Este modulo es exclusivamente para crear campos y widgets.
- * 
+ *
  * Aqui tambien se añadio el trabajo con JQuery.
  */
 
@@ -15,6 +15,10 @@ function ww_campos_field_widget_info() {
     'ww_link' => array(
       'label' => t('Link'),
       'field types' => array('text'),
+    ),
+    'ww_chosen' => array(
+      'label' => t('mi chosen'),
+      'field types' => array('list_text'),
     ),
   );
 }
@@ -35,10 +39,45 @@ function ww_campos_field_widget_form(&$form, &$form_state, $field, $instance, $l
         '#attributes' => array('class' => array('text-full')),
       );
       break;
+    case 'ww_chosen':
+      $value_key = key($field['columns']);
+
+      $type = str_replace('options_', '', $instance['widget']['type']);
+      $multiple = $field['cardinality'] > 1 || $field['cardinality'] == FIELD_CARDINALITY_UNLIMITED;
+      $required = $element['#required'];
+      $has_value = isset($items[0][$value_key]);
+      $properties = _options_properties($type, $multiple, $required, $has_value);
+
+      $entity_type = $element['#entity_type'];
+      $entity = $element['#entity'];
+
+      // Prepare the list of options.
+      $options = _options_get_options($field, $instance, $properties, $entity_type, $entity);
+
+      // Put current field values in shape.
+      $default_value = _options_storage_to_form($items, $options, $value_key, $properties);
+
+      $path = drupal_get_path("module", "ww_campos");
+      $main_widget = $element + array(
+        '#type' => 'select',
+        '#default_value' => $default_value,
+        // '#prefix' => '<div class="side-by-side clearfix">',
+        //'#suffix' => '</div>',
+        // Do not display a 'multiple' select box if there is only one option.
+        '#multiple' => $multiple && count($options) > 1,
+        '#options' => $options,
+        '#attributes' => array(
+          'class' => array('chosen-select-deselect'),
+          'style' => 'width: 200px',
+        ),
+      );
+      drupal_add_library("ww_campos", "chosen");
+      drupal_add_js($path . "/agregando_chosen.js", array('scope' => 'footer'));
+      break;
   }
   if ($main_widget) {
     // Conditionally alter the form element's type if text processing is enabled.
-    if ($instance['settings']['text_processing']) {
+    if (isset($instance['settings']['text_processing'])) {
       $element = $main_widget;
       $element['#type'] = 'text_format';
       $element['#format'] = isset($items[$delta]['format']) ? $items[$delta]['format'] : NULL;
@@ -97,6 +136,7 @@ function ww_campos_field_formatter_view($entity_type, $entity, $field, $instance
           '#suffix' => '</a></p>',
         );
       }
+      break;
   }
   return $element;
 }
@@ -114,6 +154,18 @@ function ww_campos_library() {
     ),
     'css' => array(
       drupal_get_path('module', 'ww_campos') . '/colorbox/example1/colorbox.css' => array(),
+    ),
+  );
+  $libraries['chosen'] = array(
+    'title' => 'Libreria de chosen',
+    'website' => 'https://github.com/harvesthq/chosen/releases/download/v1.1.0/chosen_v1.1.0.zip',
+    'version' => '1.1.0',
+    'js' => array(
+      drupal_get_path('module', 'ww_campos') . '/chosen/chosen.jquery.js' => array(),
+    ),
+    'css' => array(
+      drupal_get_path('module', 'ww_campos') . '/chosen/chosen.css' => array(),
+    //drupal_get_path('module', 'ww_campos') . '/chosen/docsupport/estilo.css' => array(),
     ),
   );
   return $libraries;

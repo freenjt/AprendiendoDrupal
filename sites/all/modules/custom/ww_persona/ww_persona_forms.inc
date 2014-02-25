@@ -3,6 +3,18 @@
  * Implements formulario persona
  */
 function people_form($form, &$form_state){
+   drupal_add_library("ww_campos", "chosen");
+  $path = drupal_get_path("module", "ww_campos");
+   drupal_add_js($path."/agregando_chosen.js", array('scope' => 'footer'));
+   
+  $options = range(0, 100);
+  $form['lista'] = array(
+    '#type' => 'select', 
+    '#title' => t('List'), 
+    '#options' => drupal_map_assoc($options),
+    '#attributes' => array('class' => array('chosen-select-deselect'), 'style' => '300px'),
+  );
+    
   $form['contact'] = array(
     '#type' => 'fieldset', 
     '#title' => t('Form contact'), 
