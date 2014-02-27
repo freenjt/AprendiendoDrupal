@@ -6,7 +6,17 @@ function people_form($form, &$form_state){
    drupal_add_library("ww_campos", "chosen");
   $path = drupal_get_path("module", "ww_campos");
    drupal_add_js($path."/agregando_chosen.js", array('scope' => 'footer'));
-   
+
+    drupal_add_library('system','ui.datepicker');
+  drupal_add_js('jQuery(document).ready(function(){jQuery( ".pickadate" ).datepicker({
+      dateFormat: "yy-mm-dd"
+    });});', 'inline');
+  $form['valida'] = array(
+    '#prefix' => '<div id="validando_persona">',
+    '#markup' => '',
+    '#suffix' => '</div>',
+  );
+
   $options = range(0, 100);
   $form['lista'] = array(
     '#type' => 'select', 
@@ -25,24 +35,36 @@ function people_form($form, &$form_state){
   $form['contact']['name'] = array(
     '#type' => 'textfield', 
     '#title' => t('Write name of user.'), 
-    //'#default_value' => variable_get(''), 
-    '#size' => 60, 
+    '#default_value' => variable_get(''), 
+    '#size' => 40, 
     '#maxlength' => 70, 
     '#required' => TRUE,
+  );
+    $form['contact']['age'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Date of birth'),
+    '#size' => 40,
+    '#maxlength' => 20,
+    '#attributes' => array('class' => array('pickadate')),
   );
   $form['contact']['email'] = array(
     '#type' => 'textfield', 
     '#title' => t('Write email of user.'), 
     '#description' => t('Format email with @'),
-    '#size' => 60, 
+    '#size' => 40, 
     '#maxlength' => 70, 
     '#required' => TRUE,
   );
   $form['submit'] = array(
     '#type' => 'submit', 
     '#value' => t('Save information'),
-    '#submit' => array('people_form_submit'),
-    '#validate' => array('people_form_validate'),
+    '#ajax' => array(
+        'callback' => 'people_form_ajax_submit',
+        'effect' => 'fade',
+      'wrapper' => 'validando_persona'
+      ),
+    //'#submit' => array('people_form_submit'),
+   // '#validate' => array('people_form_validate'),
   );
   
   return $form;
@@ -52,7 +74,8 @@ function people_form($form, &$form_state){
  * Implements form_validate.
  */
 function people_form_validate($form, &$form_state) {
-  valida_formularios($form_state, 1);
+  //dpm($form_state['values']['age'], 'age');
+  //valida_formularios($form_state, 1);
 }
 
 function valida_formularios(&$form_state, $opcion=0){
@@ -60,6 +83,11 @@ function valida_formularios(&$form_state, $opcion=0){
     //$verificar=check_email_address();
     if(!filter_var($form_state['values']['email'], FILTER_VALIDATE_EMAIL)){
       form_set_error('email', t('Error in format of email.'));
+      return 'email, Error in format of email.';
+    }
+    if($form_state['values']['name'].trim(' ') == '' || $form_state['values']
+    ['email'].trim(' ') == ''){
+      return 'Campo requerido';
     }
     //opcion 1:No recomendada
     //$resultado=db_query('select p.email_people from {persona} p');
@@ -69,12 +97,21 @@ function valida_formularios(&$form_state, $opcion=0){
       ->condition('email_people',$form_state['values']['email'],'=')
       ->execute();
     if($opcion == 1){
-
-      //dpm($resultado,'resultado');
+      $fecha_nac=strtotime($form_state['values']['age']);
+      dpm($fecha_nac, 'fecha_nac');
+      $fecha_actual = date('Y-m-d');
+      $edad = round(dateDiff($fecha_actual, $form_state['values']['age'])/365);
+      
+      if($edad < 18){
+        form_set_error('age', t('Error Edad menor de 18 años'));
+        return 'age, Error Edad menor de 18 años';
+      }
+      //dpm($edad,'diferencia');
         //$resultado;
       foreach ($resultado as $record) {
       //if($record->email_people == $form_state['values']['email']){
         form_set_error('email', t('Error email repetido'));
+        return 'email, Error email repetido';
       //}
       }
     }
@@ -88,29 +125,71 @@ function valida_formularios(&$form_state, $opcion=0){
       
       if($compara != '' && $compara['email_people'] != $result['email_people']){
         form_set_error('email', t('Error email repetido'));
+        return 'email, Error email repetido';
       }
     }
+    return '';
   }
 }
+
+/**
+ * Funcion para calcular la diferencia entre dos fechas en dias.
+ */
+function dateDiff($start, $end) {
+
+ $start_ts = strtotime($start);
+ $end_ts = strtotime($end);
+
+  $diff = $start_ts - $end_ts;
+
+  return round($diff/86400);
+}
+
 /**
  * Implements form_submit.
  */
-function people_form_submit($form, &$form_state){
-  try {
+//function people_form_submit($form, &$form_state){
+//  try {
+//    if(!empty ($form_state)){
+//      $registro=db_insert('persona')
+//      ->fields(array(
+//      'name_people' => $form_state['values']['name'],'email_people' => $form_state['values']['email'],
+//      ))->execute();  
+//    }
+//    drupal_set_message(t('The form has been submitted. name="@name , email=@email',
+//    array('@name' => $form_state['values']['name'], '@email' => $form_state['values']['email'])));
+//    $form_state['redirect'] = 'listar/persona';
+//  } catch (Exception $exc) {
+//    drupal_set_message(t('The form has not been submitted for @error',
+//    array('@error' => $exc->getTraceAsString())),'error');
+//    //echo $exc->getTraceAsString();
+//  }
+//}
+
+function people_form_ajax_submit($form, &$form_state){
+//  try {
     if(!empty ($form_state)){
+      $captura=valida_formularios($form_state, 1);
+  if($captura != ''){
+   return '<div id="validando_persona"> Error= '.$captura.'</div>';
+  }else{
       $registro=db_insert('persona')
       ->fields(array(
       'name_people' => $form_state['values']['name'],'email_people' => $form_state['values']['email'],
+       'birth_date' => $form_state['values']['age'],
       ))->execute();  
     }
-    drupal_set_message(t('The form has been submitted. name="@name , email=@email',
-    array('@name' => $form_state['values']['name'], '@email' => $form_state['values']['email'])));
-    $form_state['redirect'] = 'listar/persona';
-  } catch (Exception $exc) {
-    drupal_set_message(t('The form has not been submitted for @error',
-    array('@error' => $exc->getTraceAsString())),'error');
-    //echo $exc->getTraceAsString();
-  }
+     
+//    drupal_set_message(t('The form has been submitted. name="@name , email=@email',
+//    array('@name' => $form_state['values']['name'], '@email' => $form_state['values']['email'])));
+    //$form_state['redirect'] = 'listar/persona';
+    return '<div id="validando_persona"> Registro exitoso. fecha_nacimiento= '.$form_state['values']['age'].'</div>';
+    }
+//  } catch (Exception $exc) {
+//    drupal_set_message(t('The form has not been submitted for @error',
+//    array('@error' => $exc->getTraceAsString())),'error');
+//    //echo $exc->getTraceAsString();
+//  }
 }
 
 /**

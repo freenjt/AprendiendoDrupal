@@ -34,8 +34,12 @@ function ww_persona_schema(){
         'default' => 0, 
         //'unique' => TRUE,  
       ),
+        'birth_date' => array(
+        'description' => 'The date birth of people.',
+        'mysql_type' => 'DATETIME', 
+      ),
     ),
-    'primary_key' => array('id_people'),
+    'primary key' => array('id_people'),
     'unique keys' => array(
       'emailp' => array('email_people'),
     ),
@@ -47,7 +51,7 @@ function ww_persona_schema(){
  * Implements hook_uninstall().
  */
 function ww_persona_uninstall(){
-  variable_del('');
+  variable_del('limit_list_people');
 }
 
 /**
@@ -68,7 +72,7 @@ function ww_persona_update_7100(){
 }
 
 /**
- * Funcion para añadir unique al email.
+ * Funcion para aï¿½adir unique al email.
  */
 function ww_persona_update_7200(){
   //db_drop_primary_key('persona');
@@ -89,4 +93,12 @@ function ww_persona_update_7200(){
 function ww_persona_update_7300() {
 	$schema=drupal_get_schema('persona');
   db_add_field('persona','weight',$schema['fields']['weight']);
+}
+
+/**
+ * Funcion para agregar un nuevo campo fecha_nacimiento
+ */
+function ww_persona_update_7400() {
+  $schema=drupal_get_schema('persona');
+  db_add_field('persona','birth_date',$schema['fields']['birth_date']);
 }

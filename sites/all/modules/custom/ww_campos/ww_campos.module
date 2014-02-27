@@ -7,6 +7,8 @@
  * Aqui tambien se añadio el trabajo con JQuery.
  */
 
+
+
 /**
  * Implements hook_field_widget_info();
  */
@@ -166,6 +168,20 @@ function ww_campos_library() {
     'css' => array(
       drupal_get_path('module', 'ww_campos') . '/chosen/chosen.css' => array(),
     //drupal_get_path('module', 'ww_campos') . '/chosen/docsupport/estilo.css' => array(),
+    ),
+  );
+    $libraries['ui.datepicker'] = array(
+    'title' => 'jQuery UI: Date Picker',
+    'website' => 'http://jqueryui.com/demos/datepicker/',
+    'version' => '1.8.7',
+    'js' => array(
+      'misc/ui/jquery.ui.datepicker.min.js' => array(),
+    ),
+    'css' => array(
+      'misc/ui/jquery.ui.datepicker.css' => array(),
+    ),
+    'dependencies' => array(
+      array('system', 'ui'),
     ),
   );
   return $libraries;
