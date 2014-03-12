@@ -1,0 +1,204 @@
+<?php
+/**
+ * @file
+ * Aqui se creara las tablas de departamentos y municipios, y se actualizaran
+ * sus debidos cambios.
+ */
+
+/**
+ * Implements hook_schema();
+ */
+function ww_lista_desplegable_ajax_schema() {
+  $schema['departamentos_ajax'] = array(
+    'description' => 'This is table departamentos_ajax',
+    'fields' => array(
+      'id_department' => array(
+        'description' => 'This is the main identificator of departments with ajax',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'name_department' => array(
+        'description' => 'This is the name of the department',
+        'type' => 'varchar',
+        'length' => 70,
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('id_department'),
+    'unique keys' => array(
+      'name_dep' => array('name_department'),
+    ),
+  );
+  $schema['municipios_ajax'] = array(
+    'description' => 'This is table municipios_ajax',
+    'fields' => array(
+      'id_municipality' => array(
+        'description' => 'This is the main identificator of municipality with ajax',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'name_municipality' => array(
+        'description' => 'This is the name of the municipality',
+        'type' => 'varchar',
+        'length' => 70,
+        'not null' => TRUE,
+      ),
+      'id_department' => array(
+        'description' => 'This is the foreign key of departments',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('id_municipality'),
+    'foreign keys' => array(
+      'departamentos_ajax' => array(
+        'table' => 'departamentos_ajax',
+        'columns' => array('id_department' => 'id_department'),
+      ),
+      ),
+    'unique keys' => array(
+      'name_dep' => array('name_municipality'),
+    ),
+    
+  );
+  return $schema;
+}
+
+/**
+ * Implements hook_uninstall();
+ */
+function ww_lista_desplegable_ajax_uninstall() {
+  
+}
+
+/**
+ * Implements hook_install();
+ */
+function ww_lista_desplegable_ajax_install() {
+ $values = array('Caqueta', 'Cauca', 'Cundinamarca', 'Antioquia');
+  
+ foreach ($values as $key => $value) {
+   $query = db_insert('departamentos_ajax')
+ ->fields(array('name_department' => $value))
+ ->execute();
+   agregar_municipios($value,$query);
+ }
+}
+
+function agregar_municipios($nombre_departamento, $id_departamento){
+  $values=array();
+  switch ($nombre_departamento) {
+    case 'Caqueta':
+      $values = array(
+        array(
+          'name_municipality' => 'Florencia',
+          'id_department' => $id_departamento,
+        ),
+        array(
+          'name_municipality' => 'Puerto Rico',
+          'id_department' => $id_departamento,
+        ),
+        array(
+          'name_municipality' => 'San Vicente del Caguan',
+          'id_department' => $id_departamento,
+        ),
+        array(
+          'name_municipality' => 'Cartagena de Chaira',
+          'id_department' => $id_departamento,
+        ),
+        array(
+          'name_municipality' => 'Valparaiso',
+          'id_department' => $id_departamento,
+        ),
+      );
+      break;
+
+  case 'Cauca':
+      $values = array(
+        array(
+          'name_municipality' => 'Popayan',
+          'id_department' => $id_departamento,
+        ),
+        array(
+          'name_municipality' => 'Santander de Quilichao',
+          'id_department' => $id_departamento,
+        ),
+        array(
+          'name_municipality' => 'Puerto Tejada',
+          'id_department' => $id_departamento,
+        ),
+        array(
+          'name_municipality' => 'Bolivar',
+          'id_department' => $id_departamento,
+        ),
+        array(
+          'name_municipality' => 'Caloto',
+          'id_department' => $id_departamento,
+        ),
+      );
+      break;
+
+      case 'Cundinamarca':
+      $values = array(
+        array(
+          'name_municipality' => 'Bogota',
+          'id_department' => $id_departamento,
+        ),
+        array(
+          'name_municipality' => 'Zipaquira',
+          'id_department' => $id_departamento,
+        ),
+        array(
+          'name_municipality' => 'Guatavita',
+          'id_department' => $id_departamento,
+        ),
+        array(
+          'name_municipality' => 'Girardot',
+          'id_department' => $id_departamento,
+        ),
+        array(
+          'name_municipality' => 'Villeta',
+          'id_department' => $id_departamento,
+        ),
+      );
+      break;
+    
+    case 'Antioquia':
+      $values = array(
+        array(
+          'name_municipality' => 'Bello',
+          'id_department' => $id_departamento,
+        ),
+        array(
+          'name_municipality' => 'Envigado',
+          'id_department' => $id_departamento,
+        ),
+        array(
+          'name_municipality' => 'Sabaneta',
+          'id_department' => $id_departamento,
+        ),
+        array(
+          'name_municipality' => 'Barbosa',
+          'id_department' => $id_departamento,
+        ),
+        array(
+          'name_municipality' => 'La Estrella',
+          'id_department' => $id_departamento,
+        ),
+      );
+      break;
+    
+    default:
+      break;
+  }
+  $query = db_insert('municipios_ajax')
+    ->fields(array('name_municipality', 'id_department'));
+  foreach ($values as $record) {
+    $query->values($record);
+  }
+  $query->execute();
+}
+
+

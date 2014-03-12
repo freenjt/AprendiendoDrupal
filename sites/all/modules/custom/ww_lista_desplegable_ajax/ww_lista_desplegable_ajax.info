@@ -1,0 +1,5 @@
+name = ww_lista_desplegable_ajax
+description = Formulario que contiene dos listas desplegables con municipios y departamentos.
+core = 7.x
+package = Modulos de prueba
+

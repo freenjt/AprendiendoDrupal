@@ -1,0 +1,104 @@
+<?php
+
+/**
+ * @file
+ * Este modulo contiene dos listas desplegables donde permite seleccionar
+ * un departamento y listar sus municipios a traves de AJAX. 
+ */
+
+/**
+ * Implements hook_menu();
+ */
+function ww_lista_desplegable_ajax_menu() {
+  $items['lista/desplegable_ajax'] = array(
+    'title' => 'Listas desplegable con ajax',
+    'description' => 'Lista de departamentos y municipios',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('listas_desplegables_forms'),
+    'access arguments' => array('View_dropdownlist'),
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_permission();
+ */
+function ww_lista_desplegable_ajax_permission() {
+  return array(
+    'View_dropdownlist' => array(
+      'title' => t('View module dropdownlist ajax'),
+      'description' => t('Allow see the module with ajax.'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_forms();
+ */
+function listas_desplegables_forms($form, &$form_state) {
+
+  $departamentos = consultar_departamentos();
+
+
+  $selected = isset($form_state['values']['departamentos']) ? $form_state['values']['departamentos'] : key($departamentos);
+  $municipios = consultar_municipios($selected);
+  $form['contact'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Formulario ajax'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+  $form['contact']['departamentos'] = array(
+    '#type' => 'select',
+    '#title' => t('Departments'),
+    '#options' => $departamentos,
+    '#default_value' => $selected,
+    '#description' => t('Select department'),
+    '#ajax' => array(
+      'callback' => 'cargar_municipios',
+      'wrapper' => 'ajax_municipios',
+    ),
+  );
+  $form['contact']['municipios'] = array(
+    '#type' => 'select',
+    '#title' => t('Municipality'),
+    '#options' => $municipios,
+    '#default_value' => isset($form_state['values']['municipios']) ? $form_state['values']['municipios'] : key($municipios),
+    '#description' => t('Select municipality'),
+    '#prefix' => '<div id="ajax_municipios">',
+    '#suffix' => '</div>',
+  );
+
+  return $form;
+}
+
+function consultar_departamentos() {
+  $query = db_select('departamentos_ajax', 'da')
+    ->fields('da')
+    ->execute()
+    ->fetchAll();
+  $departamentos = array();
+  foreach ($query as $value) {
+    $departamentos[$value->id_department] = $value->name_department;
+  }
+  return $departamentos;
+}
+
+function consultar_municipios($id_departamento) {
+  $query = db_select('municipios_ajax', 'ma')
+//    ->innerjoin('departamentos_ajax', 'da', 'ma.id_department = da.id_department');
+    ->fields('ma')
+    ->condition('id_department', $id_departamento)
+    ->execute()
+    ->fetchAll();
+  $municipios = array();
+  foreach ($query as $value) {
+    $municipios[$value->id_municipality] = $value->name_municipality;
+  }
+  return $municipios;
+}
+
+function cargar_municipios($form, $form_state) {
+  return $form['contact']['municipios'];
+}
+

@@ -1,0 +1,4 @@
+name = ConversorUTM
+description = Modulo para convertir coordenadas geograficas a planas.
+core = 7.x
+package = Conversion UTM
