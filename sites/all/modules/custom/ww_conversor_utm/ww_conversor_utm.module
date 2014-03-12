@@ -1,0 +1,249 @@
+<?php
+
+/**
+ * @file
+ * Modulo para convertir de coordenadas geograficas a planas utilizando el
+ * elipsoide WGS84.
+ */
+
+/**
+ * Implements hook_menu();
+ */
+function ww_conversor_utm_menu() {
+  $items['Conversor/utm'] = array(
+    'title' => 'Convirtiendo coordenadas',
+    'description' => 'Convertir coordenadas geograficas a plana',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ww_conversor_utm_form'),
+    'access callback' => TRUE,
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_form().
+ */
+function ww_conversor_utm_form($form, &$form_state) {
+  drupal_add_css(drupal_get_path('module', 'ww_conversor_utm') . '/css/estilo.css');
+  $form['orden'] = array(
+    '#type' => 'vertical',
+  );
+  $form['convert'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Convert Coordenadas geographics'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+
+  $form['convert']['izquierda'] = array(
+    '#type' => 'container',
+  );
+  $form['convert']['d1'] = array(
+    '#type' => 'container',
+  );
+  $form['convert']['d2'] = array(
+    '#type' => 'container',
+  );
+  $form['convert']['d3'] = array(
+    '#type' => 'container',
+  );
+  $form['convert']['d4'] = array(
+    '#type' => 'container',
+  );
+  $form['convert']['izquierda']['Longitud'] = array(
+    '#type' => 'item',
+    '#title' => t('Longitud'),
+    '#markup' => '<br/>',
+  );
+  $form['convert']['izquierda']['Latitud'] = array(
+    '#type' => 'item',
+    '#title' => t('Latitud'),
+    '#markup' => '',
+  );
+  $form['convert']['d1']['gradoslong'] = array(
+    '#type' => 'textfield',
+    '#title' => 'grados',
+    '#size' => 10,
+    '#maxlength' => 128,
+    '#required' => TRUE,
+  );
+  $form['convert']['d1']['gradoslat'] = array(
+    '#type' => 'textfield',
+    '#title' => 'grados',
+    '#size' => 10,
+    '#maxlength' => 128,
+    '#required' => TRUE,
+  );
+  $form['convert']['d2']['minutoslong'] = array(
+    '#type' => 'textfield',
+    '#title' => 'min',
+    '#size' => 10,
+    '#maxlength' => 128,
+    '#required' => TRUE,
+  );
+  $form['convert']['d2']['minutoslat'] = array(
+    '#type' => 'textfield',
+    '#title' => 'min',
+    '#size' => 10,
+    '#maxlength' => 128,
+    '#required' => TRUE,
+  );
+  $form['convert']['d3']['segundoslong'] = array(
+    '#type' => 'textfield',
+    '#title' => 'seg',
+    '#size' => 10,
+    '#maxlength' => 128,
+    '#required' => TRUE,
+  );
+  $form['convert']['d3']['segundoslat'] = array(
+    '#type' => 'textfield',
+    '#title' => 'seg',
+    '#size' => 10,
+    '#maxlength' => 128,
+    '#required' => TRUE,
+  );
+  $form['convert']['d4']['husolong'] = array(
+    '#type' => 'radios',
+    '#options' => drupal_map_assoc(array(t('W'), t('E'))),
+  );
+  $form['convert']['d4']['husolat'] = array(
+    '#type' => 'radios',
+    '#options' => drupal_map_assoc(array(t('N'), t('S'))),
+  );
+  $form['convert']['d2']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Convert to coordenate plane'),
+    '#ajax' => array(
+      'callback' => 'ww_conversor_utm_show_result',
+      'wrapper' => 'resultado',
+    ),
+  );
+  $form['resultado'] = array(
+    '#markup' => 'UTM X =' . variable_get('UTM_X', '') . ' UTM Y ='
+    . variable_get('UTM_Y', '') . ' Huso=' . variable_get('Huso', ''),
+    '#prefix' => '<div id="resultado">',
+    '#suffix' => '</div>',
+  );
+
+//  print drupal_render($form['convert']['gradoslong']);
+//  print drupal_render($form['convert']['minutoslong']);
+  return $form;
+}
+
+/**
+ * Funcion para calcular la excentricidad en un elipsoide WGS84
+ * Si se quiere cambiar de elipsoide, solo debe cambiar los valores del
+ * semieje mayor y del semieje menor por el del elipsoide seleccionado.
+ */
+function ww_conversor_utm_calculate_eccentricity() {
+  //semieje mayor WGS84
+  $a = 6378137;
+// semieje mayor en Hayford 1909 $a=6378388;
+  // semieje menor WGS84
+  $b = 6356752.314245;
+// semieje menor en Hayford 1909 $b=6356911.946130;
+  $excentricidad = sqrt(pow($a, 2) - pow($b, 2)) / $a;
+  $excentricidad2 = sqrt(pow($a, 2) - pow($b, 2)) / $b;
+  //Radio polar curvatura
+  $c = pow($a, 2) / $b;
+
+  $excentricidad_curvatura = array($excentricidad, $excentricidad2, $c);
+  
+  return $excentricidad_curvatura;
+}
+
+/**
+ * Esta es la funcion donde se realizan todas las operaciones de calculo
+ * para la conversion de coordenadas geograficas a planas.
+ * @param type $form_state
+ */
+function ww_conversor_utm_define_variables($form_state) {
+  
+  $excentricidad_curvatura = ww_conversor_utm_calculate_eccentricity();
+
+  $gradoslong = (int) $form_state['values']['gradoslong'];
+  $minutoslong = (int) $form_state['values']['minutoslong'];
+  $segundoslong = (double) $form_state['values']['segundoslong'];
+  $long = $gradoslong + ($minutoslong / 60) + ($segundoslong / 3600);
+
+  $gradoslat = (int) $form_state['values']['gradoslat'];
+  $minutoslat = (int) $form_state['values']['minutoslat'];
+  $segundoslat = (double) $form_state['values']['segundoslat'];
+  $lat = $gradoslat + ($minutoslat / 60) + ($segundoslat / 3600);
+
+  $long_radianes = ($long * pi()) / 180;
+  $lat_radianes = ($lat * pi()) / 180;
+
+  variable_set('longitud', $long);
+  variable_set('latitud', $lat);
+
+  if ($form_state['values']['husolong'] == 'W') {
+    $long = -$long;
+    $long_radianes = -$long_radianes;
+  }
+  elseif ($form_state['values']['husolong'] == 'E') {
+    $long = abs($long);
+    $long_radianes = abs($long_radianes);
+  }
+
+  if ($form_state['values']['husolat'] == 'S') {
+    $lat = -$lat;
+    $lat_radianes = -$lat_radianes;
+  }
+
+  $husodec = ($long / 6) + 31;
+  $decimal_separado = explode('.', $husodec);
+  $huso = $decimal_separado[0];
+  $meridiano_central_huso = $huso * 6 - 183;
+  $desplazamiento_punto_mch = $long_radianes - ($meridiano_central_huso * pi() / 180);
+
+  $A = cos($lat_radianes) * sin($desplazamiento_punto_mch);
+  $epsilon = (1 / 2) * log((1 + $A) / (1 - $A));
+  $n = atan(tan($lat_radianes) / cos($desplazamiento_punto_mch)) - $lat_radianes;
+
+  $v = ($excentricidad_curvatura[2] / pow((1 + pow($excentricidad_curvatura[1], 2) * pow(cos($lat_radianes), 2)), (1 / 2))) * 0.9996;
+  $zeta = (pow($excentricidad_curvatura[1], 2) / 2) * pow($epsilon, 2) * pow(cos($lat_radianes), 2);
+  $A1 = sin(2 * $lat_radianes);
+
+  $A2 = $A1 * pow(cos($lat_radianes), 2);
+  $j2 = $lat_radianes + ($A1 / 2);
+  $j4 = (3 * $j2 + $A2) / 4;
+
+  $j6 = (5 * $j4 + $A2 * pow(cos($lat_radianes), 2)) / 3;
+  $alfa = (3 / 4) * pow($excentricidad_curvatura[1], 2);
+  $beta = (5 / 3) * pow($alfa, 2);
+
+  $y = (35 / 27) * pow($alfa, 3);
+  $B0 = 0.9996 * $excentricidad_curvatura[2] * ($lat_radianes - ($alfa * $j2) + $beta * $j4 - $y * $j6);
+
+  // 500.000 es el retranqueo que se realiza en las coordenadas X con
+  // el objetivo que no exista coordenadas negativas.
+  $valor_x = $epsilon * $v * (1 + ($zeta / 3)) + 500000;
+  $valor_y = $n * $v * (1 + $zeta) + $B0;
+  if ($form_state['values']['husolat'] == 'S') {
+    $valor_y +=10000000;
+  }
+
+  variable_set('UTM_X', $valor_x);
+  variable_set('UTM_Y', $valor_y);
+  variable_set('Huso', $huso);
+}
+
+/**
+ * Funcion que se llama desde ajax para retornar el valor deseado.
+ * @param string $form
+ * @param type $form_state
+ * @return string
+ */
+function ww_conversor_utm_show_result($form, $form_state) {
+  if (!empty($form_state['values'])) {
+    ww_conversor_utm_define_variables($form_state);
+    $form['resultado']['#markup'] = '<b>UTM X = </b>' . variable_get('UTM_X', '') . ' <b>UTM Y =</b>'
+    . variable_get('UTM_Y', '') . ' <b>Huso=</b>' . variable_get('Huso', '');
+    variable_del('UTM_X');
+    variable_del('UTM_Y');
+    variable_del('Huso');
+  }
+  return $form['resultado'];
+}
+

@@ -1,0 +1,76 @@
+/* 
+    Document   : estilo
+    Created on : 11/03/2014, 09:23:58 AM
+    Author     : FreenJimenez
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+/* 
+   TODO customize this sample style
+   Syntax recommendation http://www.w3.org/TR/REC-CSS2/
+*/
+
+root { 
+    display: block;
+}
+
+#edit-convert{ 
+    /*background:#930; */
+    /*padding:10px; */
+    width: 600px;
+    height: 200px;
+} 
+
+#edit-izquierda{ 
+    float: left;
+    position: relative;
+    left:10px;
+    width:95px; 
+    margin:0px;
+    margin-top: 20px;
+    height: auto;
+} 
+
+#edit-d1{ 
+   float: left;
+    position: absolute;
+    left:135px;
+    width:75px; 
+    margin:0px; 
+    height: auto;
+}
+#edit-d2{ 
+    float: left;
+    /*padding:10px; */
+    /*color:#fff; */
+    position: absolute;
+    left:230px;
+    width:75px; 
+    margin:0px; 
+    height: auto;
+
+}
+#edit-d3{ 
+    float: left;
+    /*padding:10px; */
+    /*color:#fff; */
+    position: absolute;
+    left:325px;
+    width:95px; 
+    margin:0px; 
+    height: auto;
+
+}
+
+#edit-d4{ 
+    float: left;
+    /*padding:10px; */
+    /*color:#fff; */
+    position: absolute;
+    left:420px;
+    width:95px; 
+    margin:10px; 
+    height: auto;
+
+}
